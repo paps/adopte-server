@@ -1,11 +1,13 @@
 "use strict"
+
 mongoose = require("mongoose")
 passport = require("passport")
-config = require("../config/environment")
+config = require("../config/config")
 jwt = require("jsonwebtoken")
 expressJwt = require("express-jwt")
 compose = require("composable-middleware")
 User = require("../api/user/user.model")
+
 validateJwt = expressJwt(secret: config.secrets.session)
 
 ###
@@ -18,31 +20,26 @@ isAuthenticated = ->
     # allow access_token to be passed through query parameter as well
     # Attach user to request
     compose().use((req, res, next) ->
-        req.headers.authorization = "Bearer " + req.query.access_token    if req.query and req.query.hasOwnProperty("access_token")
+        req.headers.authorization = "Bearer " + req.query.access_token if req.query and req.query.hasOwnProperty("access_token")
         validateJwt req, res, next
-        return
     ).use (req, res, next) ->
         User.findById req.user._id, (err, user) ->
-            return next(err)    if err
-            return res.send(401)    unless user
+            return next(err) if err
+            return res.send(401) unless user
             req.user = user
             next()
-            return
-
-        return
 
 
 ###
 Checks if the user role meets the minimum requirements of the route
 ###
 hasRole = (roleRequired) ->
-    throw new Error("Required role needs to be set")    unless roleRequired
+    throw new Error("Required role needs to be set") unless roleRequired
     compose().use(isAuthenticated()).use meetsRequirements = (req, res, next) ->
         if config.userRoles.indexOf(req.user.role) >= config.userRoles.indexOf(roleRequired)
             next()
         else
             res.send 403
-        return
 
 
 ###
@@ -66,7 +63,6 @@ setTokenCookie = (req, res) ->
     token = signToken(req.user._id, req.user.role)
     res.cookie "token", JSON.stringify(token)
     res.redirect "/"
-    return
 
 exports.isAuthenticated = isAuthenticated
 exports.hasRole = hasRole

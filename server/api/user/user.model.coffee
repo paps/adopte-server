@@ -88,7 +88,7 @@ UserSchema.pre "save", (next) ->
     return
 
 
-###*
+###
 Methods
 ###
 UserSchema.methods =

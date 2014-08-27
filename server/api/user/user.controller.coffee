@@ -2,7 +2,7 @@
 
 User = require("./user.model")
 passport = require("passport")
-config = require("../../config/environment")
+config = require("../../config/config")
 jwt = require("jsonwebtoken")
 
 validationError = (res, err) ->
@@ -15,11 +15,8 @@ restriction: 'admin'
 ###
 exports.index = (req, res) ->
     User.find {}, "-salt -hashedPassword", (err, users) ->
-        return res.send(500, err)    if err
+        return res.send(500, err) if err
         res.json 200, users
-        return
-
-    return
 
 
 ###
@@ -30,16 +27,13 @@ exports.create = (req, res, next) ->
     newUser.provider = "local"
     newUser.role = "user"
     newUser.save (err, user) ->
-        return validationError(res, err)    if err
+        return validationError(res, err) if err
         token = jwt.sign(
             _id: user._id
         , config.secrets.session,
             expiresInMinutes: 60 * 5
         )
         res.json token: token
-        return
-
-    return
 
 
 ###
@@ -48,12 +42,9 @@ Get a single user
 exports.show = (req, res, next) ->
     userId = req.params.id
     User.findById userId, (err, user) ->
-        return next(err)    if err
-        return res.send(404)    unless user
+        return next(err) if err
+        return res.send(404) unless user
         res.json user.profile
-        return
-
-    return
 
 
 ###
@@ -62,10 +53,8 @@ restriction: 'admin'
 ###
 exports.destroy = (req, res) ->
     User.findByIdAndRemove req.params.id, (err, user) ->
-        return res.send(500, err)    if err
+        return res.send(500, err) if err
         res.send 204
-
-    return
 
 
 ###
@@ -79,15 +68,10 @@ exports.changePassword = (req, res, next) ->
         if user.authenticate(oldPass)
             user.password = newPass
             user.save (err) ->
-                return validationError(res, err)    if err
-                res.send 200
-                return
-
+                return validationError(res, err) if err
+                return res.send 200
         else
-            res.send 403
-        return
-
-    return
+            return res.send 403
 
 
 ###
@@ -98,12 +82,9 @@ exports.me = (req, res, next) ->
     User.findOne
         _id: userId
     , "-salt -hashedPassword", (err, user) -> # don't ever give out the password or salt
-        return next(err)    if err
-        return res.json(404)    unless user
+        return next(err) if err
+        return res.json(404) unless user
         res.json user
-        return
-
-    return
 
 
 ###
@@ -111,4 +92,3 @@ Authentication callback
 ###
 exports.authCallback = (req, res, next) ->
     res.redirect "/"
-    return

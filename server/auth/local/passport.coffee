@@ -1,5 +1,6 @@
 passport = require("passport")
 LocalStrategy = require("passport-local").Strategy
+
 exports.setup = (User, config) ->
     passport.use new LocalStrategy(
         usernameField: "email"
@@ -8,7 +9,7 @@ exports.setup = (User, config) ->
         User.findOne
             email: email.toLowerCase()
         , (err, user) ->
-            return done(err)    if err
+            return done(err) if err
             unless user
                 return done(null, false,
                     message: "This email is not registered."
@@ -18,7 +19,4 @@ exports.setup = (User, config) ->
                     message: "This password is not correct."
                 )
             done null, user
-
-        return
     )
-    return

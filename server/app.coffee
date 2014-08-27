@@ -7,7 +7,7 @@ Main application file
 process.env.NODE_ENV = process.env.NODE_ENV or "development"
 express = require("express")
 mongoose = require("mongoose")
-config = require("./config/environment")
+config = require("./config/config")
 
 # Connect to database
 mongoose.connect config.mongo.uri, config.mongo.options

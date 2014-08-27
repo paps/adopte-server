@@ -12,7 +12,7 @@ methodOverride = require("method-override")
 cookieParser = require("cookie-parser")
 errorHandler = require("errorhandler")
 path = require("path")
-config = require("./environment")
+config = require("./config")
 passport = require("passport")
 
 module.exports = (app) ->
