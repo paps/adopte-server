@@ -11,7 +11,7 @@ angular.module 'adopteServerApp', [
   $urlRouterProvider
   .otherwise '/'
 
-  $locationProvider.html5Mode true
+  $locationProvider.html5Mode no
   $httpProvider.interceptors.push 'authInterceptor'
 
 .factory 'authInterceptor', ($rootScope, $q, $cookieStore, $location) ->

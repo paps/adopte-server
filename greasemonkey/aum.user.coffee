@@ -26,6 +26,7 @@ betterTitle = () ->
         if (t == titleEl || (t.parentNode && t.parentNode == titleEl))
             setTitle()
     setTitle()
+    setInterval (() -> setTitle()), 3000
 
 
 pageProfileMec = () ->
