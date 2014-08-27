@@ -1,4 +1,5 @@
 "use strict"
+
 express = require("express")
 passport = require("passport")
 config = require("../config/config")

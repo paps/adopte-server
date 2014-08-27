@@ -1,11 +1,68 @@
 'use strict'
 
 Profile = require './profile.model'
+adopte = require '../../components/adopte'
 
 handleError = (res, err) ->
     res.send 500, err
 
 exports.index = (req, res) ->
     Profile.find (err, profiles) ->
-        if err then return handleError res, err
-        res.json 200, profiles
+        return handleError(res, err) if err
+        res.json profiles
+
+exports.get = (req, res) ->
+    Profile.findOne {id: req.params.id}, (err, profile) ->
+        return handleError(res, err) if err
+        return res.send(404) unless profile
+        res.json profile
+
+exports.visite = (req, res) ->
+    adopte.fetchProfile req.params.id, (err, json) ->
+        return handleError(res, err) if err
+        Profile.findOne {id: req.params.id}, (err, profile) ->
+            return handleError(res, err) if err
+            stats =
+                mails: req.params.mails
+                charmes: req.params.charmes
+                visites: req.params.visites
+                paniers: req.params.paniers
+            if profile
+                profile.visites.push Date.now()
+                profile.derniereVisite.date = Date.now()
+                profile.derniereVisite.json = json
+                profile.markModified "derniereVisite.json"
+                profile.derniereVisite.stats = stats
+                profile.save (err) ->
+                    return handleError(res, err) if err
+                    res.json profile
+                    console.log "* Visite " + profile.visites.length + " pour le profil " + profile.id
+            else
+                profile =
+                    id: req.params.id
+                    charmes: []
+                    visites: [Date.now()]
+                    premiereVisite:
+                        date: Date.now()
+                        json: json
+                        stats: stats
+                    derniereVisite:
+                        date: Date.now()
+                        json: json
+                        stats: stats
+                Profile.create profile, (err, profile) ->
+                    return handleError(res, err) if err
+                    res.json 201, profile
+                    console.log "* Premiere visite pour le profil " + profile.id
+
+exports.charme = (req, res) ->
+    Profile.findOne {id: req.params.id}, (err, profile) ->
+        return handleError(res, err) if err
+        if profile
+            profile.charmes.push Date.now()
+            profile.save (err) ->
+                return handleError(res, err) if err
+                res.json profile
+                console.log "* Charme " + profile.charmes.length + " pour le profil " + profile.id
+        else
+            res.send 404
