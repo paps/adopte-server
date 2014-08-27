@@ -35,7 +35,7 @@ module.exports = (grunt) ->
         express:
             options:
                 port: process.env.PORT or 9000
-                #opts: ['node_modules/.bin/coffee']
+                opts: ['node_modules/.bin/coffee']
 
             dev:
                 options:
@@ -82,7 +82,7 @@ module.exports = (grunt) ->
                 ]
 
             gruntfile:
-                files: ["Gruntfile.js"]
+                files: ["Gruntfile.coffee"]
 
             livereload:
                 files: [
@@ -97,7 +97,7 @@ module.exports = (grunt) ->
                     livereload: true
 
             express:
-                files: ["server/**/*.{js,json}"]
+                files: ["server/**/*.{js,json,coffee}"]
                 tasks: [
                     "express:dev"
                     "wait"
@@ -172,7 +172,7 @@ module.exports = (grunt) ->
         # Use nodemon to run server in debug mode with an initial breakpoint
         nodemon:
             debug:
-                script: "server/app.js"
+                script: "server/app.coffee"
                 options:
                     nodeArgs: ["--debug-brk"]
                     env:

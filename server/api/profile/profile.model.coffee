@@ -32,4 +32,4 @@ profileSchema = new Schema {
         score: Number
 }
 
-modules.exports = mongoose.model 'Profile', profileSchema
+module.exports = mongoose.model 'Profile', profileSchema
