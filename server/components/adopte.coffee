@@ -12,7 +12,7 @@ httpOptions =
 exports.fetchProfile = (id, done) ->
     needle.request "get", "http://www.adopteunmec.com/api/users/" + id, null, httpOptions, (err, res) ->
         if err
-            done err
+            done 'Adopte error: ' + err.toString()
         else if res.statusCode != 200
             done 'Adopte returned HTTP ' + res.statusCode
         else
