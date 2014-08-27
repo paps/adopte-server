@@ -67,10 +67,17 @@ pageProfileMeuf = () ->
 
 ($ document).ready () ->
 
-    ($ 'body').css('background', 'rgb(223, 239, 254)')
+    if ($ '#flash-points').length
+        ($ '#flash-points').remove()
+    if ($ '#search-engine .fields').length
+        ($ '#search-engine .fields').hide()
+    if ($ '#profile-complete-rate').length
+        ($ '#profile-complete-rate').hide()
     betterTitle()
 
     if ($ '#view_description_girl').length
         pageProfileMeuf()
     else if ($ '#view_description_boy').length
         pageProfileMec()
+
+    ($ 'body').css('background', 'rgb(223, 239, 254)')

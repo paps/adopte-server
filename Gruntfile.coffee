@@ -40,7 +40,6 @@ module.exports = (grunt) ->
             dev:
                 options:
                     script: "server/app.coffee"
-                    debug: true
 
             prod:
                 options:
@@ -512,7 +511,6 @@ module.exports = (grunt) ->
                 "env:prod"
                 "express:prod"
                 "wait"
-                "open"
                 "express-keepalive"
             ])
         if target is "debug"
@@ -534,7 +532,6 @@ module.exports = (grunt) ->
             "autoprefixer"
             "express:dev"
             "wait"
-            "open"
             "watch"
         ]
 
