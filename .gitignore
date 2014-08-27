@@ -7,3 +7,4 @@ client/bower_components
 dist
 server/config/config.local.coffee
 .*.swp
+greasemonkey/config.js
