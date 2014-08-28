@@ -34,7 +34,7 @@ module.exports = (app) ->
         app.use morgan()
 
     if "development" is env or "test" is env
-        app.use require("connect-livereload")()
+        #app.use require("connect-livereload")()
         app.use express.static(path.join(config.root, ".tmp"))
         app.use express.static(path.join(config.root, "client"))
         app.set "appPath", "client"
