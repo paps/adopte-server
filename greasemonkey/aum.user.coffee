@@ -159,7 +159,7 @@ pageProfileMeuf = () ->
         $.ajax(
             type: 'GET'
             dataType: 'json'
-            url: aumConfig.host + 'api/charme/' + profileId + '?key=' + aumConfig.key
+            url: aumConfig.host + 'api/profiles/charme/' + profileId + '?key=' + aumConfig.key
         ).done((profile) ->
             status.text 'Charme enregistré.'
         ).fail((jqXhr, textStatus, err) ->
@@ -268,16 +268,20 @@ showConfigBox = () ->
 # --------------------------------------------------------------------------------------------------------------------------
 
 betterMail = () ->
-    if not ($ '#msg-content').length
-        return
-    ($ '#msg-content').focus()
-    ($ '#msg-content').css('height', '30px').keypress (e) ->
-        if e.altKey or e.shiftKey or e.ctrlKey or e.metaKey
-            return
-        if e.which is 13
-            e.preventDefault()
-            ($ '#send-message').click()
-            setTimeout (() -> betterMail()), 1000
+    setup = () ->
+        ($ '#msg-content').focus()
+        ($ '#msg-content').css('height', '30px').keypress (e) ->
+            if e.altKey or e.shiftKey or e.ctrlKey or e.metaKey
+                return
+            if e.which is 13
+                e.preventDefault()
+                ($ '#send-message').click()
+    rebuild = () ->
+        if ($ '#msg-content').length
+            height = parseInt ($ '#msg-content').css('height')
+            if height > 40
+                setup()
+    setInterval (() -> rebuild()), 300
 
 # --------------------------------------------------------------------------------------------------------------------------
 
@@ -298,7 +302,7 @@ betterMail = () ->
         pageProfileMec()
     else if ((document.URL.indexOf '.com/visits') > 0) or ((document.URL.indexOf '.com/mySearch/results') > 0)
         processThumbs()
-
-    setTimeout (() -> betterMail()), 1000
+    else if ((document.URL.indexOf '.com/messages') > 0)
+        betterMail()
 
     ($ 'body').css('background', 'rgb(223, 239, 254)')
