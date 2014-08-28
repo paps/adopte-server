@@ -1,7 +1,7 @@
 ###
 // ==UserScript==
 // @name        aum
-// @namespace   http://www.adopteunmec.com/
+// @namespace   adopte.un.mec
 // @include     http://www.adopteunmec.com/*
 // @include     https://www.adopteunmec.com/*
 // @version     2
@@ -10,9 +10,9 @@
 // ==/UserScript==
 ###
 
-
 round = (n, decimals) -> (Math.round n * Math.pow(10, decimals)) / (Math.pow 10, decimals)
 
+# --------------------------------------------------------------------------------------------------------------------------
 
 betterTitle = () ->
     titleEl = document.getElementsByTagName('title')[0]
@@ -30,11 +30,98 @@ betterTitle = () ->
     setTitle()
     setInterval (() -> setTitle()), 3000
 
+# --------------------------------------------------------------------------------------------------------------------------
+
+processProfile = (profile) ->
+    visites = []
+    for visite in profile.visites
+        visites.push new Date(visite)
+    profile.visites = visites
+    charmes = []
+    for charme in profile.charmes
+        charmes.push new Date(charme)
+    profile.charmes = charmes
+    profile.derniereVisite.date = new Date(profile.derniereVisite.date)
+    profile.premiereVisite.date = new Date(profile.premiereVisite.date)
+    profile.secondesEntreVisites = round ((profile.derniereVisite.date - profile.premiereVisite.date) / 1000), 2
+    profile.statsOffset =
+        mails: profile.derniereVisite.stats.mails - profile.premiereVisite.stats.mails
+        charmes: profile.derniereVisite.stats.charmes - profile.premiereVisite.stats.charmes
+        visites: profile.derniereVisite.stats.visites - profile.premiereVisite.stats.visites
+        paniers: profile.derniereVisite.stats.paniers - profile.premiereVisite.stats.paniers
+    profile.charmeRate = round (profile.derniereVisite.stats.charmes / profile.derniereVisite.stats.visites) * 100, 2
+    profile.mailRate = round (profile.derniereVisite.stats.mails / profile.derniereVisite.stats.charmes) * 100, 2
+    profile.visitesParHeure = round ((3600 * profile.statsOffset.visites) / profile.secondesEntreVisites), 2
+    if profile.visitesParHeure is NaN then profile.visitesParHeure = 0
+    if profile.visitesParHeure > 0
+        profile.ageEnHeures = round profile.derniereVisite.stats.visites / profile.visitesParHeure, 2
+        if profile.ageEnHeures < 72
+            profile.ageStr = round(profile.ageEnHeures, 1) + 'H'
+        else if profile.ageEnHeures < 24 * 60
+            profile.ageStr = round(profile.ageEnHeures / 24, 1) + 'J'
+        else if profile.ageEnHeures < 24 * 30 * 12
+            profile.ageStr = round(profile.ageEnHeures / (24 * 30), 1) + 'M'
+        else
+            profile.ageStr = round(profile.ageEnHeures / (24 * 30 * 12), 1) + 'Y'
+    else
+        profile.ageEnHeures = 0
+        profile.ageStr = '?'
+    console.log '>>> AuM processed profile: %j', profile
+    return profile
+
+# --------------------------------------------------------------------------------------------------------------------------
+
+processThumbs = () ->
+
+    processedLinks = []
+
+    linkIsProcessed = (elem) ->
+        for l in processedLinks
+            if l.is elem
+                return yes
+        return no
+
+    findNewThumbs = () ->
+        nbLinks = 0
+        ($ 'a').each () ->
+            if $(this).attr 'href'
+                link = $(this).attr('href')
+                if (link.indexOf '/profile/') >= 0
+                    link = (link.replace /[^\d.]/g, '').replace /\./g, ''
+                    profileId = parseInt link
+                    if (profileId > 100) and (profileId isnt Infinity)
+                        if $(this).children('img').length
+                            if ($(this).offset().top > 0) and ($(this).offset().left > 0) and $(this).is ':visible'
+                                if not linkIsProcessed $(this)
+                                    ++nbLinks
+                                    processedLinks.push $(this)
+                                    newThumb $(this), profileId
+        if nbLinks > 0
+            console.log '>>> ' + nbLinks + ' new profile thumbnails'
+
+    newThumb = (elem, profileId) ->
+        $.ajax(
+            type: 'GET'
+            dataType: 'json'
+            url: aumConfig.host + 'api/profiles/' + profileId + '?key=' + aumConfig.key
+        ).done((profile) ->
+            profile = processProfile profile
+            drawInfoBox profile, elem
+        ).fail((jqXhr, textStatus, err) ->
+            if jqXhr.status isnt 404
+                alert 'Query to AuM Management Server failed, see console'
+                console.log '>>> Ajax failure: %j', { jqXhr: jqXhr, textStatus: textStatus, err: err }
+        )
+
+    setInterval findNewThumbs, 1500
+
+# --------------------------------------------------------------------------------------------------------------------------
 
 pageProfileMec = () ->
 
     ($ 'blockquote.title').css('font-family', 'Arial').css('font-size', '14px')
 
+# --------------------------------------------------------------------------------------------------------------------------
 
 pageProfileMeuf = () ->
 
@@ -67,38 +154,98 @@ pageProfileMeuf = () ->
     ($ '#popularity > table').append mailRate
 
     ($ 'a.charm').click () ->
-        alert 'Charme !'
+        status = $('<div>').text 'Enregistrement du charme...'
+        ($ 'a.charm').after status
+        $.ajax(
+            type: 'GET'
+            dataType: 'json'
+            url: aumConfig.host + 'api/charme/' + profileId + '?key=' + aumConfig.key
+        ).done((profile) ->
+            status.text 'Charme enregistré.'
+        ).fail((jqXhr, textStatus, err) ->
+            alert 'Query to AuM Management Server failed, see console'
+            console.log '>>> Ajax failure: %j', { jqXhr: jqXhr, textStatus: textStatus, err: err }
+        )
 
     $.ajax(
         type: 'GET'
         dataType: 'json'
         url: aumConfig.host + 'api/profiles/visite/' + profileId + '/' + points.mails + '/' + points.charmes + '/' + points.visites + '/' + points.paniers + '?key=' + aumConfig.key
     ).done((profile) ->
-        drawInfoBox profile, 300, 300
+        profile = processProfile profile
+        drawInfoBox profile, ($ '#user-pics')
+        drawProfileBox profile
     ).fail((jqXhr, textStatus, err) ->
         alert 'Query to AuM Management Server failed, see console'
         console.log '>>> Ajax failure: %j', { jqXhr: jqXhr, textStatus: textStatus, err: err }
     )
 
+# --------------------------------------------------------------------------------------------------------------------------
 
-
-drawInfoBox = (json, posX, posY) ->
-    div = ($ '<div>')
+drawProfileBox = (profile) ->
+    pre = ($ '<pre>')
         .css('position', 'absolute')
-        .css('top', posX + 'px')
-        .css('left', posY + '10px')
-        .css('background-color', '#e2e2e2')
+        .css('overflow', 'auto')
+        .css('z-index', '1000')
+        .css('width', '255px')
+        .css('height', '500px')
+        .css('top', (($ '#content').offset().top + 180) + 'px')
+        .css('left', (($ '#content').offset().left - 258) + 'px')
+        .css('background-color', '#fff')
         .css('border', '1px solid #ccc')
         .css('padding', '2px')
         .css('font-family', 'Monospace')
-    div.append ($ '<span>').text '100'
-    div.append ($ '<br />')
-    div.append ($ '<span>').text '200'
-    div.append ($ '<br />')
+        .css('font-size', '10px')
+    pre.text """
+        Age estimé: #{profile.ageStr}
+
+        Visites par heure: #{profile.visitesParHeure}
+
+        Date de naissance: #{profile.derniereVisite.json.birthdate}
+
+        Derniere connexion:
+        #{profile.derniereVisite.json.last_cnx}
+
+        Premiere visite:
+        #{profile.premiereVisite.date.toString()}
+
+        Derniere visite:
+        #{profile.derniereVisite.date.toString()}
+
+        Charmes:
+        #{(JSON.stringify profile.charmes).replace /,/g, ',\n'}
+
+        Visites:
+        #{(JSON.stringify profile.visites).replace /,/g, ',\n'}
+        """
+    ($ 'body').append pre
+
+# --------------------------------------------------------------------------------------------------------------------------
+
+drawInfoBox = (profile, elem) ->
+    div = ($ '<div>')
+        .css('position', 'absolute')
+        .css('text-align', 'right')
+        .css('overflow', 'hidden')
+        .css('z-index', '1000')
+        .css('width', '40')
+        .css('top', elem.offset().top + 'px')
+        .css('left', (elem.offset().left - 46) + 'px')
+        .css('background-color', '#fff')
+        .css('border', '1px solid #ccc')
+        .css('padding', '2px')
+        .css('font-family', 'Monospace')
+        .css('font-size', '10px')
+    div.append ($ '<div>').css('background-color', (if profile.visites.length > 5 then '#ff4b4b' else '#ffffff')).attr('title', 'Nombre de mes visites').html 'V&nbsp;' + profile.visites.length
+    div.append ($ '<div>').css('background-color', (if profile.charmes.length > 0 then '#ff21b8' else '#d3fbff')).attr('title', 'Nombre de mes charmes').html 'C&nbsp;' + profile.charmes.length
+    div.append ($ '<div>').css('background-color', '#d2ffcc').attr('title', 'Estimation de l\'age du profil (en heures: ' + profile.ageEnHeures + ')').html 'A&nbsp;' + profile.ageStr
+    div.append ($ '<div>').css('background-color', '#fcc6ff').attr('title', '% de charmes par visites').html 'C&nbsp;/&nbsp;V<br />' + profile.charmeRate + '%'
+    div.append ($ '<div>').css('background-color', '#fff4d0').attr('title', '% de mails par charmes').html 'M&nbsp;/&nbsp;C<br />' + profile.mailRate + '%'
     ($ 'body').append div
 
+# --------------------------------------------------------------------------------------------------------------------------
 
-configurator = () ->
+showConfigBox = () ->
     div = ($ '<div>')
         .css('position', 'absolute')
         .css('top', '10px')
@@ -118,6 +265,21 @@ configurator = () ->
     div.append key
     ($ 'body').append div
 
+# --------------------------------------------------------------------------------------------------------------------------
+
+betterMail = () ->
+    if not ($ '#msg-content').length
+        return
+    ($ '#msg-content').focus()
+    ($ '#msg-content').css('height', '30px').keypress (e) ->
+        if e.altKey or e.shiftKey or e.ctrlKey or e.metaKey
+            return
+        if e.which is 13
+            e.preventDefault()
+            ($ '#send-message').click()
+            setTimeout (() -> betterMail()), 1000
+
+# --------------------------------------------------------------------------------------------------------------------------
 
 ($ document).ready () ->
 
@@ -128,11 +290,15 @@ configurator = () ->
     if ($ '#profile-complete-rate').length
         ($ '#profile-complete-rate').hide()
     betterTitle()
-    configurator()
+    showConfigBox()
 
     if ($ '#view_description_girl').length
         pageProfileMeuf()
     else if ($ '#view_description_boy').length
         pageProfileMec()
+    else if ((document.URL.indexOf '.com/visits') > 0) or ((document.URL.indexOf '.com/mySearch/results') > 0)
+        processThumbs()
+
+    setTimeout (() -> betterMail()), 1000
 
     ($ 'body').css('background', 'rgb(223, 239, 254)')

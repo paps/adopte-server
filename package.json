@@ -4,6 +4,7 @@
   "main": "server/app.js",
   "dependencies": {
     "coffee-script": "*",
+    "cors": "*",
     "needle": "~0.7.8",
     "express": "~4.0.0",
     "morgan": "~1.0.0",

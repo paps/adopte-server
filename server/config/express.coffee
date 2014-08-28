@@ -14,6 +14,7 @@ errorHandler = require("errorhandler")
 path = require("path")
 config = require("./config")
 passport = require("passport")
+cors = require("cors")
 
 module.exports = (app) ->
 
@@ -21,6 +22,7 @@ module.exports = (app) ->
     app.set "views", config.root + "/server/views"
     app.set "view engine", "jade"
     app.use compression()
+    app.use cors()
     app.use bodyParser.urlencoded(extended: false)
     app.use bodyParser.json()
     app.use methodOverride()

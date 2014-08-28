@@ -16,4 +16,8 @@ exports.fetchProfile = (id, done) ->
         else if res.statusCode != 200
             done 'Adopte returned HTTP ' + res.statusCode
         else
-            done null, res.body
+            if (typeof res.body) is 'object' and (res.body isnt null) and Object.keys(res.body).length > 30
+                delete res.body.$ref # lol
+                done null, res.body
+            else
+                done 'Adopte returned a weird json'
