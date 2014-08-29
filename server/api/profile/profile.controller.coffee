@@ -40,6 +40,7 @@ exports.visite = (req, res) ->
             else
                 profile =
                     id: req.params.id
+                    avis: null
                     charmes: []
                     visites: [Date.now()]
                     premiereVisite:
@@ -64,5 +65,17 @@ exports.charme = (req, res) ->
                 return handleError(res, err) if err
                 res.json profile
                 console.log "* Charme " + profile.charmes.length + " pour le profil " + profile.id
+        else
+            res.send 404
+
+exports.avis = (req, res) ->
+    Profile.findOne {id: req.params.id}, (err, profile) ->
+        return handleError(res, err) if err
+        if profile
+            profile.avis = req.params.avis
+            profile.save (err) ->
+                return handleError(res, err) if err
+                res.json profile
+                console.log "* Avis \"" + profile.avis + "\" pour le profil " + profile.id
         else
             res.send 404

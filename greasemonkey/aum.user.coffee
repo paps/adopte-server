@@ -175,6 +175,7 @@ pageProfileMeuf = () ->
         profile = processProfile profile
         drawInfoBox profile, ($ '#user-pics')
         drawProfileBox profile
+        avisBox profile
     ).fail((jqXhr, textStatus, err) ->
         alert 'Query to AuM Management Server failed, see console'
         console.log '>>> Ajax failure: %j', { jqXhr: jqXhr, textStatus: textStatus, err: err }
@@ -222,6 +223,46 @@ drawProfileBox = (profile) ->
 
 # --------------------------------------------------------------------------------------------------------------------------
 
+avisBox = (profile) ->
+    div = ($ '<div>')
+        .css('position', 'absolute')
+        .css('z-index', '1000')
+        .css('width', '170px')
+        .css('top', (($ '#content').offset().top + 80) + 'px')
+        .css('left', (($ '#content').offset().left - 220) + 'px')
+        .css('background-color', '#fff')
+        .css('border', '1px solid #ccc')
+        .css('padding', '2px')
+        .css('font-family', 'Monospace')
+        .css('font-size', '10px')
+    div.append ($ '<div>').text('Avis:')
+    avisNope = ($ '<button>').text('Nope')
+    div.append ($ '<div>').append avisNope
+    avisExcellent = ($ '<button>').text('Excellent')
+    div.append ($ '<div>').append avisExcellent
+    status = ($ '<div>')
+    div.append status
+
+    setAvis = (avis) ->
+        status.text 'Enregistrement de l\'avis...'
+        $.ajax(
+            type: 'GET'
+            dataType: 'json'
+            url: aumConfig.host + 'api/profiles/avis/' + profile.id + '/' + avis + '?key=' + aumConfig.key
+        ).done((profile) ->
+            status.text 'Avis enregistré.'
+        ).fail((jqXhr, textStatus, err) ->
+            alert 'Query to AuM Management Server failed, see console'
+            console.log '>>> Ajax failure: %j', { jqXhr: jqXhr, textStatus: textStatus, err: err }
+        )
+
+    avisNope.click () -> setAvis 'nope'
+    avisExcellent.click () -> setAvis 'excellent'
+
+    ($ 'body').append div
+
+# --------------------------------------------------------------------------------------------------------------------------
+
 drawInfoBox = (profile, elem) ->
     div = ($ '<div>')
         .css('position', 'absolute')
@@ -238,9 +279,9 @@ drawInfoBox = (profile, elem) ->
         .css('font-size', '10px')
     div.append ($ '<div>').css('background-color', (if profile.visites.length > 5 then '#ff4b4b' else '#ffffff')).attr('title', 'Nombre de mes visites').html 'V&nbsp;' + profile.visites.length
     div.append ($ '<div>').css('background-color', (if profile.charmes.length > 0 then '#ff21b8' else '#d3fbff')).attr('title', 'Nombre de mes charmes').html 'C&nbsp;' + profile.charmes.length
-    div.append ($ '<div>').css('background-color', '#d2ffcc').attr('title', 'Estimation de l\'age du profil (en heures: ' + profile.ageEnHeures + ')').html 'A&nbsp;' + profile.ageStr
-    div.append ($ '<div>').css('background-color', '#fcc6ff').attr('title', '% de charmes par visites').html 'C&nbsp;/&nbsp;V<br />' + profile.charmeRate + '%'
-    div.append ($ '<div>').css('background-color', '#fff4d0').attr('title', '% de mails par charmes').html 'M&nbsp;/&nbsp;C<br />' + profile.mailRate + '%'
+    div.append ($ '<div>').css('background-color', (if profile.ageStr is '?' then '#e9ffe6' else '#8eff96')).attr('title', 'Estimation de l\'age du profil (en heures: ' + profile.ageEnHeures + ')').html 'A&nbsp;' + profile.ageStr
+    div.append ($ '<div>').css('background-color', (if profile.charmeRate < 27 then '#ffe8fe' else '#ff47f4')).attr('title', '% de charmes par visites').html 'C&nbsp;/&nbsp;V<br />' + profile.charmeRate + '%'
+    div.append ($ '<div>').css('background-color', (if profile.mailRate > 10 then '#fcffe0' else '#eaff00')).attr('title', '% de mails par charmes').html 'M&nbsp;/&nbsp;C<br />' + profile.mailRate + '%'
     ($ 'body').append div
 
 # --------------------------------------------------------------------------------------------------------------------------

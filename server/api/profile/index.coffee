@@ -17,5 +17,6 @@ router.get '/', checkAuth, controller.index
 router.get '/:id', checkAuth, controller.get
 router.get '/visite/:id/:mails/:charmes/:visites/:paniers', checkAuth, controller.visite
 router.get '/charme/:id', checkAuth, controller.charme
+router.get '/avis/:id/:avis', checkAuth, controller.avis
 
 module.exports = router
