@@ -238,6 +238,8 @@ avisBox = (profile) ->
     div.append ($ '<div>').text('Avis:')
     avisNope = ($ '<button>').text('Nope')
     div.append ($ '<div>').append avisNope
+    avisNormal = ($ '<button>').text('Normal')
+    div.append ($ '<div>').append avisNormal
     avisExcellent = ($ '<button>').text('Excellent')
     div.append ($ '<div>').append avisExcellent
     status = ($ '<div>')
@@ -258,6 +260,7 @@ avisBox = (profile) ->
 
     avisNope.click () -> setAvis 'nope'
     avisExcellent.click () -> setAvis 'excellent'
+    avisNormal.click () -> setAvis 'normal'
 
     ($ 'body').append div
 
@@ -272,16 +275,27 @@ drawInfoBox = (profile, elem) ->
         .css('width', '40')
         .css('top', elem.offset().top + 'px')
         .css('left', (elem.offset().left - 46) + 'px')
-        .css('background-color', '#fff')
-        .css('border', '1px solid #ccc')
         .css('padding', '2px')
         .css('font-family', 'Monospace')
         .css('font-size', '10px')
-    div.append ($ '<div>').css('background-color', (if profile.visites.length > 5 then '#ff4b4b' else '#ffffff')).attr('title', 'Nombre de mes visites').html 'V&nbsp;' + profile.visites.length
-    div.append ($ '<div>').css('background-color', (if profile.charmes.length > 0 then '#ff21b8' else '#d3fbff')).attr('title', 'Nombre de mes charmes').html 'C&nbsp;' + profile.charmes.length
-    div.append ($ '<div>').css('background-color', (if profile.ageStr is '?' then '#e9ffe6' else '#8eff96')).attr('title', 'Estimation de l\'age du profil (en heures: ' + profile.ageEnHeures + ')').html 'A&nbsp;' + profile.ageStr
-    div.append ($ '<div>').css('background-color', (if profile.charmeRate < 27 then '#ffe8fe' else '#ff47f4')).attr('title', '% de charmes par visites').html 'C&nbsp;/&nbsp;V<br />' + profile.charmeRate + '%'
-    div.append ($ '<div>').css('background-color', (if profile.mailRate > 10 then '#fcffe0' else '#eaff00')).attr('title', '% de mails par charmes').html 'M&nbsp;/&nbsp;C<br />' + profile.mailRate + '%'
+    if profile.avis is 'nope'
+        div
+            .css('background-color', '#474747')
+            .css('border', '1px solid #d8ff00')
+            .css('color', '#fff')
+            .css('text-align', 'center')
+        div.append ($ '<div>').text ':-/'
+    else
+        div.css('background-color', '#fff')
+        if profile.avis is 'excellent'
+            div.css('border', '1px solid #00d8ff')
+        else
+            div.css('border', '1px solid #ccc')
+        div.append ($ '<div>').css('background-color', (if profile.visites.length > 5 then '#ff4b4b' else '#ffffff')).attr('title', 'Nombre de mes visites').html 'V&nbsp;' + profile.visites.length
+        div.append ($ '<div>').css('background-color', (if profile.charmes.length > 0 then '#ff21b8' else '#d3fbff')).attr('title', 'Nombre de mes charmes').html 'C&nbsp;' + profile.charmes.length
+        div.append ($ '<div>').css('background-color', (if profile.ageStr is '?' then '#e9ffe6' else '#8eff96')).attr('title', 'Estimation de l\'age du profil (en heures: ' + profile.ageEnHeures + ')').html 'A&nbsp;' + profile.ageStr
+        div.append ($ '<div>').css('background-color', (if profile.charmeRate < 27 then '#ffe8fe' else '#ff47f4')).attr('title', '% de charmes par visites').html 'C&nbsp;/&nbsp;V<br />' + profile.charmeRate + '%'
+        div.append ($ '<div>').css('background-color', (if profile.mailRate > 10 then '#fcffe0' else '#eaff00')).attr('title', '% de mails par charmes').html 'M&nbsp;/&nbsp;C<br />' + profile.mailRate + '%'
     ($ 'body').append div
 
 # --------------------------------------------------------------------------------------------------------------------------
