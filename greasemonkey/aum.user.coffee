@@ -167,6 +167,8 @@ pageProfileMeuf = () ->
             console.log '>>> Ajax failure: %j', { jqXhr: jqXhr, textStatus: textStatus, err: err }
         )
 
+    requestStatus = ($ '<div>').text 'Recuperation du profil...'
+    ($ 'a.charm').after requestStatus
     $.ajax(
         type: 'GET'
         dataType: 'json'
@@ -179,7 +181,8 @@ pageProfileMeuf = () ->
     ).fail((jqXhr, textStatus, err) ->
         alert 'Query to AuM Management Server failed, see console'
         console.log '>>> Ajax failure: %j', { jqXhr: jqXhr, textStatus: textStatus, err: err }
-    )
+    ).always () ->
+        requestStatus.remove()
 
 # --------------------------------------------------------------------------------------------------------------------------
 
