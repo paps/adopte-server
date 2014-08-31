@@ -8,6 +8,7 @@ profileSchema = new Schema {
     charmes: [Date]
     visites: [Date]
     avis: String
+    notes: String
     premiereVisite:
         date: Date
         json: {}

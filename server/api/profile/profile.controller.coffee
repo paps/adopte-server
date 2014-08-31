@@ -79,3 +79,15 @@ exports.avis = (req, res) ->
                 console.log "* Avis \"" + profile.avis + "\" pour le profil " + profile.id
         else
             res.send 404
+
+exports.notes = (req, res) ->
+    Profile.findOne {id: req.params.id}, (err, profile) ->
+        return handleError(res, err) if err
+        if profile
+            profile.notes = req.body.notes
+            profile.save (err) ->
+                return handleError(res, err) if err
+                res.json profile
+                console.log "* Notes mises à jour pour le profil " + profile.id
+        else
+            res.send 404

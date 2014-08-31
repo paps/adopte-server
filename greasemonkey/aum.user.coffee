@@ -325,8 +325,51 @@ showConfigBox = () ->
 
 # --------------------------------------------------------------------------------------------------------------------------
 
+notesBox = (profile) ->
+    textarea = ($ '<textarea>')
+        .css('position', 'absolute')
+        .css('z-index', '1000')
+        .css('width', '255px')
+        .css('height', '500px')
+        .css('top', (($ '#content').offset().top + 180) + 'px')
+        .css('left', (($ '#content').offset().left + ($ '#content').width()) + 'px')
+        .css('border', '1px solid #ccc')
+        .css('padding', '2px')
+        .css('font-family', 'Monospace')
+        .css('font-size', '10px')
+        .attr('id', 'aumNotesBox')
+    textarea.val profile.notes
+    ($ 'body').append textarea
+
+# --------------------------------------------------------------------------------------------------------------------------
+
 betterMail = () ->
+    currentProfileId = null
+    removeNotesBox = () ->
+        ($ '#aumNotesBox').remove()
+    showNotes = (profileId) ->
+        $.ajax(
+            type: 'GET'
+            dataType: 'json'
+            url: aumConfig.host + 'api/profiles/' + profileId + '?key=' + aumConfig.key
+        ).done((profile) ->
+            profile = processProfile profile
+            notesBox profile
+        ).fail((jqXhr, textStatus, err) ->
+            if jqXhr.status isnt 404
+                alert 'Query to AuM Management Server failed, see console'
+                console.log '>>> Ajax failure: %j', { jqXhr: jqXhr, textStatus: textStatus, err: err }
+        )
+    getCurrentProfileId = () ->
+        link = ($ 'div.message:not(.from-me) div.message-data a').eq(0)
+        if link.length and (link.attr 'href')
+            link = link.attr 'href'
+            id = parseInt (link.replace /[^\d.]/g, '').replace /\./g, ''
+            if (id > 100) and (id isnt Infinity)
+                return id
+        return null
     setup = () ->
+        console.log 'SETUP!'
         ($ '#msg-content').focus()
         ($ '#msg-content').css('height', '30px').keypress (e) ->
             if e.altKey or e.shiftKey or e.ctrlKey or e.metaKey
@@ -334,12 +377,21 @@ betterMail = () ->
             if e.which is 13
                 e.preventDefault()
                 ($ '#send-message').click()
+        newId = getCurrentProfileId()
+        console.log '>>> DISCUSSING WITH ' + newId
+        if newId != currentProfileId
+            removeNotesBox()
+        currentProfileId = newId
+        if currentProfileId
+            showNotes(currentProfileId)
     rebuild = () ->
         if ($ '#msg-content').length
             height = parseInt ($ '#msg-content').css('height')
             if height > 40
                 setup()
-    setInterval (() -> rebuild()), 300
+        else
+            removeNotesBox()
+    setInterval (() -> rebuild()), 750
 
 # --------------------------------------------------------------------------------------------------------------------------
 
