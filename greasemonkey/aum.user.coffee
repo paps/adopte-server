@@ -209,7 +209,7 @@ drawProfileBox = (profile) ->
 
         Date de naissance: #{profile.derniereVisite.json.birthdate}
 
-        Derniere connexion (UTC ?):
+        Derniere connexion (heure de Paris):
         #{profile.derniereVisite.json.last_cnx}
 
         Premiere visite:
