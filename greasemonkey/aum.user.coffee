@@ -12,6 +12,10 @@
 
 round = (n, decimals) -> (Math.round n * Math.pow(10, decimals)) / (Math.pow 10, decimals)
 
+ajaxError = (jqXhr, textStatus, err) ->
+    alert 'Query to AuM Management Server failed, see console'
+    console.log '>>> Ajax failure: %j', { jqXhr: jqXhr, textStatus: textStatus, err: err }
+
 # --------------------------------------------------------------------------------------------------------------------------
 
 betterTitle = () ->
@@ -62,7 +66,7 @@ processProfile = (profile) ->
         else if profile.ageEnHeures < 24 * 30 * 12
             profile.ageStr = round(profile.ageEnHeures / (24 * 30), 1) + 'M'
         else
-            profile.ageStr = round(profile.ageEnHeures / (24 * 30 * 12), 1) + 'Y'
+            profile.ageStr = round(profile.ageEnHeures / (24 * 30 * 12), 1) + 'A'
     else
         profile.ageEnHeures = 0
         profile.ageStr = '?'
@@ -107,11 +111,11 @@ processThumbs = () ->
         ).done((profile) ->
             profile = processProfile profile
             drawInfoBox profile, elem
-        ).fail((jqXhr, textStatus, err) ->
-            if jqXhr.status isnt 404
-                alert 'Query to AuM Management Server failed, see console'
-                console.log '>>> Ajax failure: %j', { jqXhr: jqXhr, textStatus: textStatus, err: err }
-        )
+            if profile.avis
+                elem.attr 'title', 'Avis: "' + profile.avis + '"'
+            else
+                elem.attr 'title', 'Pas encore d\'avis sur ce profil'
+        ).fail (jqXhr, textStatus, err) -> if jqXhr.status isnt 404 then ajaxError jqXhr, textStatus, err
 
     setInterval findNewThumbs, 1500
 
@@ -125,7 +129,10 @@ pageProfileMec = () ->
 
 pageProfileMeuf = () ->
 
-    ($ 'blockquote.title').css('font-family', 'Arial').css('font-size', '14px')
+    ($ 'blockquote.title').css('font-family', 'Monaco').css('font-size', '14px')
+    phrase = ($ 'blockquote.title').attr 'title'
+    if phrase
+        ($ 'blockquote.title').empty().append ($ '<span>').text phrase
 
     removeX = (elem) -> elem.text elem.text().replace(' x', '')
 
@@ -162,12 +169,9 @@ pageProfileMeuf = () ->
             url: aumConfig.host + 'api/profiles/charme/' + profileId + '?key=' + aumConfig.key
         ).done((profile) ->
             status.text 'Charme enregistré.'
-        ).fail((jqXhr, textStatus, err) ->
-            alert 'Query to AuM Management Server failed, see console'
-            console.log '>>> Ajax failure: %j', { jqXhr: jqXhr, textStatus: textStatus, err: err }
-        )
+        ).fail ajaxError
 
-    requestStatus = ($ '<div>').text 'Recuperation du profil...'
+    requestStatus = ($ '<div>').text 'Récuperation du profil...'
     ($ 'a.charm').after requestStatus
     $.ajax(
         type: 'GET'
@@ -178,10 +182,7 @@ pageProfileMeuf = () ->
         drawInfoBox profile, ($ '#user-pics')
         drawProfileBox profile
         avisBox profile
-    ).fail((jqXhr, textStatus, err) ->
-        alert 'Query to AuM Management Server failed, see console'
-        console.log '>>> Ajax failure: %j', { jqXhr: jqXhr, textStatus: textStatus, err: err }
-    ).always () ->
+    ).fail(ajaxError).always () ->
         requestStatus.remove()
 
 # --------------------------------------------------------------------------------------------------------------------------
@@ -201,13 +202,13 @@ drawProfileBox = (profile) ->
         .css('font-family', 'Monospace')
         .css('font-size', '10px')
     pre.text """
-        Age estimé: #{profile.ageStr}
+        Durée estimée d'utilisation de AuM: #{profile.ageStr}
 
-        Visites par heure: #{profile.visitesParHeure}
+        Visites par heure: #{if profile.visitesParHeure then profile.visitesParHeure else '?'}
 
         Date de naissance: #{profile.derniereVisite.json.birthdate}
 
-        Derniere connexion:
+        Derniere connexion (UTC ?):
         #{profile.derniereVisite.json.last_cnx}
 
         Premiere visite:
@@ -231,7 +232,7 @@ avisBox = (profile) ->
         .css('position', 'absolute')
         .css('z-index', '1000')
         .css('width', '170px')
-        .css('top', (($ '#content').offset().top + 80) + 'px')
+        .css('top', (($ '#content').offset().top + 60) + 'px')
         .css('left', (($ '#content').offset().left - 220) + 'px')
         .css('background-color', '#fff')
         .css('border', '1px solid #ccc')
@@ -245,6 +246,8 @@ avisBox = (profile) ->
     div.append ($ '<div>').append avisNormal
     avisExcellent = ($ '<button>').text('Excellent')
     div.append ($ '<div>').append avisExcellent
+    avisSans = ($ '<button>').text('Sans avis')
+    div.append ($ '<div>').append avisSans
     status = ($ '<div>')
     div.append status
 
@@ -256,14 +259,11 @@ avisBox = (profile) ->
             url: aumConfig.host + 'api/profiles/avis/' + profile.id + '/' + avis + '?key=' + aumConfig.key
         ).done((profile) ->
             status.text 'Avis enregistré.'
-        ).fail((jqXhr, textStatus, err) ->
-            alert 'Query to AuM Management Server failed, see console'
-            console.log '>>> Ajax failure: %j', { jqXhr: jqXhr, textStatus: textStatus, err: err }
-        )
-
+        ).fail ajaxError
     avisNope.click () -> setAvis 'nope'
     avisExcellent.click () -> setAvis 'excellent'
     avisNormal.click () -> setAvis 'normal'
+    avisSans.click () -> setAvis 'none'
 
     ($ 'body').append div
 
@@ -284,19 +284,21 @@ drawInfoBox = (profile, elem) ->
     if profile.avis is 'nope'
         div
             .css('background-color', '#474747')
-            .css('border', '1px solid #d8ff00')
+            .css('border', '1px solid #444')
             .css('color', '#fff')
             .css('text-align', 'center')
         div.append ($ '<div>').text ':-/'
     else
         div.css('background-color', '#fff')
         if profile.avis is 'excellent'
-            div.css('border', '1px solid #00d8ff')
+            div.css('border', '1px dashed #000cff')
+        else if profile.avis is 'normal'
+            div.css('border', '1px dotted #444444')
         else
             div.css('border', '1px solid #ccc')
         div.append ($ '<div>').css('background-color', (if profile.visites.length > 5 then '#ff4b4b' else '#ffffff')).attr('title', 'Nombre de mes visites').html 'V&nbsp;' + profile.visites.length
         div.append ($ '<div>').css('background-color', (if profile.charmes.length > 0 then '#ff21b8' else '#d3fbff')).attr('title', 'Nombre de mes charmes').html 'C&nbsp;' + profile.charmes.length
-        div.append ($ '<div>').css('background-color', (if profile.ageStr is '?' then '#e9ffe6' else '#8eff96')).attr('title', 'Estimation de l\'age du profil (en heures: ' + profile.ageEnHeures + ')').html 'A&nbsp;' + profile.ageStr
+        div.append ($ '<div>').css('background-color', (if profile.ageStr is '?' then '#e9ffe6' else '#8eff96')).attr('title', 'Estimation de la durée d\'utilisation de AuM').html 'A&nbsp;' + profile.ageStr
         div.append ($ '<div>').css('background-color', (if profile.charmeRate < 27 then '#ffe8fe' else '#ff47f4')).attr('title', '% de charmes par visites').html 'C&nbsp;/&nbsp;V<br />' + profile.charmeRate + '%'
         div.append ($ '<div>').css('background-color', (if profile.mailRate > 10 then '#fcffe0' else '#eaff00')).attr('title', '% de mails par charmes').html 'M&nbsp;/&nbsp;C<br />' + profile.mailRate + '%'
     ($ 'body').append div
@@ -325,28 +327,89 @@ showConfigBox = () ->
 
 # --------------------------------------------------------------------------------------------------------------------------
 
+notesSaverStarted = no
+notesSaverProfileId = null
+notesSaverText = null
+
+notesSaver = () ->
+    notesSaverStarted = yes
+    if not ($ '#aumNotesBox').length
+        notesSaverProfileId = null
+        notesSaverText = null
+        callNotesSaverLater()
+        return
+    profileId = parseInt ($ '#aumNotesProfileId').val()
+    if profileId isnt notesSaverProfileId
+        notesSaverProfileId = profileId
+        notesSaverText = ($ '#aumNotesTextarea').val()
+        callNotesSaverLater()
+        return
+    text = ($ '#aumNotesTextarea').val()
+    if text isnt notesSaverText
+        notesSaverText = text
+        ($ '#aumNotesStatus').text 'Enregistrement...'
+        console.log 'test!!!!!'
+        $.ajax(
+            type: 'POST'
+            data: JSON.stringify { notes: text }
+            dataType: 'json'
+            contentType: "application/json; charset=utf-8"
+            url: aumConfig.host + 'api/profiles/notes/' + profileId + '?key=' + aumConfig.key
+        ).done((profile) ->
+            if ($ '#aumNotesStatus').length
+                ($ '#aumNotesStatus').text 'Enregistré.'
+                setTimeout (() ->
+                    if ($ '#aumNotesStatus').length
+                        ($ '#aumNotesStatus').empty()
+                ), 750
+        ).fail(ajaxError).always () ->
+            callNotesSaverLater()
+        console.log 'HEYY'
+    else
+        callNotesSaverLater()
+
+callNotesSaverLater = () -> setTimeout (() -> notesSaver()), 1000
+
 notesBox = (profile) ->
-    textarea = ($ '<textarea>')
+    div = ($ '<div>')
         .css('position', 'absolute')
         .css('z-index', '1000')
-        .css('width', '255px')
-        .css('height', '500px')
-        .css('top', (($ '#content').offset().top + 180) + 'px')
-        .css('left', (($ '#content').offset().left + ($ '#content').width()) + 'px')
+        .css('top', (($ '#content').offset().top + 145) + 'px')
+        .css('left', (($ '#content').offset().left + ($ '#content').width() - 15) + 'px')
         .css('border', '1px solid #ccc')
+        .css('background-color', '#ddd')
         .css('padding', '2px')
         .css('font-family', 'Monospace')
         .css('font-size', '10px')
         .attr('id', 'aumNotesBox')
-    textarea.val profile.notes
-    ($ 'body').append textarea
+    input = ($ '<input>')
+        .css('width', '65px')
+        .val(profile.id)
+        .attr('type', 'text')
+        .attr('id', 'aumNotesProfileId')
+    status = ($ '<span>')
+        .attr('id', 'aumNotesStatus')
+    textarea = ($ '<textarea>')
+        .css('width', '255px')
+        .css('height', '500px')
+        .val(profile.notes)
+        .attr('id', 'aumNotesTextarea')
+    div.append ($ '<span>').text 'Profil: '
+    div.append input
+    div.append ($ '<span>').text ' '
+    div.append status
+    div.append ($ '<br>')
+    div.append textarea
+    ($ 'body').append div
+    if not notesSaverStarted then callNotesSaverLater()
 
 # --------------------------------------------------------------------------------------------------------------------------
 
 betterMail = () ->
     currentProfileId = null
     removeNotesBox = () ->
-        ($ '#aumNotesBox').remove()
+        if ($ '#aumNotesBox').length
+            ($ '#aumNotesBox').remove()
     showNotes = (profileId) ->
         $.ajax(
             type: 'GET'
@@ -355,11 +418,7 @@ betterMail = () ->
         ).done((profile) ->
             profile = processProfile profile
             notesBox profile
-        ).fail((jqXhr, textStatus, err) ->
-            if jqXhr.status isnt 404
-                alert 'Query to AuM Management Server failed, see console'
-                console.log '>>> Ajax failure: %j', { jqXhr: jqXhr, textStatus: textStatus, err: err }
-        )
+        ).fail (jqXhr, textStatus, err) -> if jqXhr.status is 404 then (alert 'Ce profil n\'a jamais été visité. Pour avoir les notes, il faut au moins une visite.') else ajaxError jqXhr, textStatus, err
     getCurrentProfileId = () ->
         link = ($ 'div.message:not(.from-me) div.message-data a').eq(0)
         if link.length and (link.attr 'href')
@@ -369,7 +428,6 @@ betterMail = () ->
                 return id
         return null
     setup = () ->
-        console.log 'SETUP!'
         ($ '#msg-content').focus()
         ($ '#msg-content').css('height', '30px').keypress (e) ->
             if e.altKey or e.shiftKey or e.ctrlKey or e.metaKey
@@ -378,7 +436,7 @@ betterMail = () ->
                 e.preventDefault()
                 ($ '#send-message').click()
         newId = getCurrentProfileId()
-        console.log '>>> DISCUSSING WITH ' + newId
+        console.log '>>> Setting up discussion with ' + newId + '...'
         if newId != currentProfileId
             removeNotesBox()
         currentProfileId = newId
