@@ -132,7 +132,7 @@ pageProfileMeuf = () ->
     ($ 'blockquote.title').css('font-family', 'Monaco').css('font-size', '14px')
     phrase = ($ 'blockquote.title').attr 'title'
     if phrase
-        ($ 'blockquote.title').empty().append ($ '<span>').text phrase
+        ($ 'blockquote.title').empty().text phrase
 
     removeX = (elem) -> elem.text elem.text().replace(' x', '')
 
@@ -182,6 +182,7 @@ pageProfileMeuf = () ->
         drawInfoBox profile, ($ '#user-pics')
         drawProfileBox profile
         avisBox profile
+        notesBox profile
     ).fail(ajaxError).always () ->
         requestStatus.remove()
 
