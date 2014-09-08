@@ -252,6 +252,9 @@ avisBox = (profile) ->
     status = ($ '<div>')
     div.append status
 
+    if (profile.avis is null) or (profile.avis is '') or (profile.avis is 'none')
+        window.onbeforeunload = () -> 'Pas d\'avis sur ce profile ou quoi ?!'
+
     setAvis = (avis) ->
         status.text 'Enregistrement de l\'avis...'
         $.ajax(
@@ -260,6 +263,7 @@ avisBox = (profile) ->
             url: aumConfig.host + 'api/profiles/avis/' + profile.id + '/' + avis + '?key=' + aumConfig.key
         ).done((profile) ->
             status.text 'Avis enregistré.'
+            window.onbeforeunload = null
         ).fail ajaxError
     avisNope.click () -> setAvis 'nope'
     avisExcellent.click () -> setAvis 'excellent'
@@ -349,7 +353,6 @@ notesSaver = () ->
     if text isnt notesSaverText
         notesSaverText = text
         ($ '#aumNotesStatus').text 'Enregistrement...'
-        console.log 'test!!!!!'
         $.ajax(
             type: 'POST'
             data: JSON.stringify { notes: text }
@@ -365,7 +368,6 @@ notesSaver = () ->
                 ), 750
         ).fail(ajaxError).always () ->
             callNotesSaverLater()
-        console.log 'HEYY'
     else
         callNotesSaverLater()
 
