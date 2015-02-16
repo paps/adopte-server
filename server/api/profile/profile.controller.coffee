@@ -22,13 +22,20 @@ exports.visite = (req, res) ->
         return handleError(res, err) if err
         Profile.findOne {id: req.params.id}, (err, profile) ->
             return handleError(res, err) if err
+            if typeof(req.param 'bot') isnt 'undefined'
+                visiteParBot = yes
+            else
+                visiteParBot = no
             stats =
                 mails: req.params.mails
                 charmes: req.params.charmes
                 visites: req.params.visites
                 paniers: req.params.paniers
             if profile
-                profile.visites.push Date.now()
+                if visiteParBot
+                    profile.visitesBot.push Date.now()
+                else
+                    profile.visites.push Date.now()
                 profile.derniereVisite.date = Date.now()
                 profile.derniereVisite.json = json
                 profile.markModified "derniereVisite.json"
@@ -36,13 +43,14 @@ exports.visite = (req, res) ->
                 profile.save (err) ->
                     return handleError(res, err) if err
                     res.json profile
-                    console.log "* Visite " + profile.visites.length + " pour le profil " + profile.id
+                    console.log "* " + (if visiteParBot then "[BOT] " else "") + "Visite " + (profile.visites.length + profile.visitesBot.length) + " pour le profil " + profile.id
             else
                 profile =
                     id: req.params.id
                     avis: null
                     charmes: []
-                    visites: [Date.now()]
+                    visites: []
+                    visitesBot: []
                     premiereVisite:
                         date: Date.now()
                         json: json
@@ -51,10 +59,14 @@ exports.visite = (req, res) ->
                         date: Date.now()
                         json: json
                         stats: stats
+                if visiteParBot
+                    profile.visitesBot.push Date.now()
+                else
+                    profile.visites.push Date.now()
                 Profile.create profile, (err, profile) ->
                     return handleError(res, err) if err
                     res.json 201, profile
-                    console.log "* Premiere visite pour le profil " + profile.id
+                    console.log "* " + (if visiteParBot then "[BOT] " else "") + "Premiere visite pour le profil " + profile.id
 
 exports.charme = (req, res) ->
     Profile.findOne {id: req.params.id}, (err, profile) ->
