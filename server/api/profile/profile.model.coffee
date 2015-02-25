@@ -7,6 +7,7 @@ profileSchema = new Schema {
     id: Number
     charmes: [Date]
     visites: [Date]
+    visitesBot: [Date]
     avis: String
     notes: String
     premiereVisite:

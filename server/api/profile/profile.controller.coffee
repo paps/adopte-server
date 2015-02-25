@@ -41,7 +41,8 @@ exports.visite = (req, res) ->
                 profile.markModified "derniereVisite.json"
                 profile.derniereVisite.stats = stats
                 profile.save (err) ->
-                    return handleError(res, err) if err
+                    if err
+                        return handleError(res, err)
                     res.json profile
                     console.log "* " + (if visiteParBot then "[BOT] " else "") + "Visite " + (profile.visites.length + profile.visitesBot.length) + " pour le profil " + profile.id
             else
