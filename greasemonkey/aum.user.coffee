@@ -221,8 +221,14 @@ drawProfileBox = (profile) ->
         Charmes:
         #{(JSON.stringify profile.charmes).replace /,/g, ',\n'}
 
+        Charmes par bot:
+        #{(JSON.stringify profile.charmesBot).replace /,/g, ',\n'}
+
         Visites:
         #{(JSON.stringify profile.visites).replace /,/g, ',\n'}
+
+        Visites par bot:
+        #{(JSON.stringify profile.visitesBot).replace /,/g, ',\n'}
         """
     ($ 'body').append pre
 
@@ -296,13 +302,19 @@ drawInfoBox = (profile, elem) ->
     else
         div.css('background-color', '#fff')
         if profile.avis is 'excellent'
-            div.css('border', '1px dashed #000cff')
+            div.css('border', '1px solid #0000ff')
         else if profile.avis is 'normal'
-            div.css('border', '1px dotted #444444')
+            div.css('border', '1px dashed #333333')
         else
-            div.css('border', '1px solid #ccc')
-        div.append ($ '<div>').css('background-color', (if profile.visites.length > 5 then '#ff4b4b' else '#ffffff')).attr('title', 'Nombre de mes visites').html 'V&nbsp;' + profile.visites.length
-        div.append ($ '<div>').css('background-color', (if profile.charmes.length > 0 then '#ff21b8' else '#d3fbff')).attr('title', 'Nombre de mes charmes').html 'C&nbsp;' + profile.charmes.length
+            div.css('border', '1px solid #dddddd')
+        if (profile.visites.length is 0) and (profile.visitesBot.length > 0)
+            div.append ($ '<div>').css('background-color', '#000').css('color', '#fff').attr('title', 'Profil uniquement visité par bot').html 'BOT&nbsp;' + profile.visitesBot.length
+        else
+            div.append ($ '<div>').css('background-color', (if profile.visites.length > 5 then '#ff4b4b' else '#ffffff')).attr('title', 'Nombre de mes visites (moi: ' + profile.visites.length + ', bot: ' + profile.visitesBot.length + ')').html 'V&nbsp;' + (profile.visites.length + profile.visitesBot.length)
+        if (profile.charmes.length is 0) and (profile.charmesBot.length > 0)
+            div.append ($ '<div>').css('background-color', '#000').css('color', '#fff').attr('title', 'Profil uniquement charmé par bot').html 'BOT&nbsp;' + profile.charmesBot.length
+        else
+            div.append ($ '<div>').css('background-color', (if profile.charmes.length > 0 then '#ff21b8' else '#d3fbff')).attr('title', 'Nombre de mes charmes (moi: ' + profile.charmes.length + ', bot: ' + profile.charmesBot.length + ')').html 'C&nbsp;' + (profile.charmes.length + profile.charmesBot.length)
         div.append ($ '<div>').css('background-color', (if profile.ageStr is '?' then '#e9ffe6' else '#8eff96')).attr('title', 'Estimation de la durée d\'utilisation de AuM').html 'A&nbsp;' + profile.ageStr
         div.append ($ '<div>').css('background-color', (if profile.charmeRate < 27 then '#ffe8fe' else '#ff47f4')).attr('title', '% de charmes par visites').html 'C&nbsp;/&nbsp;V<br />' + profile.charmeRate + '%'
         div.append ($ '<div>').css('background-color', (if profile.mailRate > 10 then '#fcffe0' else '#eaff00')).attr('title', '% de mails par charmes').html 'M&nbsp;/&nbsp;C<br />' + profile.mailRate + '%'

@@ -6,6 +6,7 @@ Schema = mongoose.Schema
 profileSchema = new Schema {
     id: Number
     charmes: [Date]
+    charmesBot: [Date]
     visites: [Date]
     visitesBot: [Date]
     avis: String

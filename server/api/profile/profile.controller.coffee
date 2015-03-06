@@ -50,6 +50,7 @@ exports.visite = (req, res) ->
                     id: req.params.id
                     avis: null
                     charmes: []
+                    charmesBot: []
                     visites: []
                     visitesBot: []
                     premiereVisite:
@@ -73,11 +74,18 @@ exports.charme = (req, res) ->
     Profile.findOne {id: req.params.id}, (err, profile) ->
         return handleError(res, err) if err
         if profile
-            profile.charmes.push Date.now()
+            if typeof(req.param 'bot') isnt 'undefined'
+                charmeParBot = yes
+            else
+                charmeParBot = no
+            if charmeParBot
+                profile.charmesBot.push Date.now()
+            else
+                profile.charmes.push Date.now()
             profile.save (err) ->
                 return handleError(res, err) if err
                 res.json profile
-                console.log "* Charme " + profile.charmes.length + " pour le profil " + profile.id
+                console.log "* " + (if charmeParBot then "[BOT] " else "") + "Charme " + (profile.charmes.length + profile.charmesBot.length) + " pour le profil " + profile.id
         else
             res.send 404
 
