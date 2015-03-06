@@ -25,7 +25,12 @@ betterTitle = () ->
         nbPaniers = parseInt ($ '#basket a').text()
         nbVisites = parseInt ($ '#visites a').text()
         nbChats = parseInt ($ '#chat a').text()
-        titleEl.innerHTML = 'AuM (' + nbMails + ', ' + nbPaniers + ', ' + nbVisites + ', ' + nbChats + ')'
+        matches = /[0-9]+/.exec ($ '.charm-count').text()
+        if matches
+            nbCharmes = parseInt matches[0]
+        else
+            nbCharmes = 0
+        titleEl.innerHTML = 'AuM [' + nbCharmes + '] (' + nbMails + ', ' + nbPaniers + ', ' + nbVisites + ', ' + nbChats + ')'
     docEl = document.documentElement
     docEl.addEventListener 'DOMSubtreeModified', (evt) ->
         t = evt.target

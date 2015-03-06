@@ -2,6 +2,7 @@
 
 Profile = require './profile.model'
 adopte = require '../../components/adopte'
+_ = require 'underscore'
 
 handleError = (res, err) ->
     res.send 500, err
@@ -16,6 +17,28 @@ exports.get = (req, res) ->
         return handleError(res, err) if err
         return res.send(404) unless profile
         res.json profile
+
+exports.listeCharme = (req, res) ->
+    Profile.find
+        'visitesBot.0': { $exists: yes }
+        'charmesBot.0': { $exists: no }
+        'visites.0': { $exists: no }
+        'charmes.0': { $exists: no },
+        (err, profiles) ->
+            return handleError(res, err) if err
+            keptProfiles = []
+            for profile in profiles
+                stats = profile.derniereVisite.stats
+                if isFinite(stats.charmes) and isFinite(stats.visites) and isFinite(stats.mails)
+                    if (stats.charmes > 0) and (stats.visites > 0) and (stats.mails > 0)
+                        if stats.visites > stats.charmes
+                            profile.cvRatio = stats.charmes / stats.visites
+                            keptProfiles.push profile
+            profiles = _.sortBy keptProfiles, (p) -> p.cvRatio
+            ids = []
+            for profile in profiles
+                ids.push profile.id
+            res.json ids
 
 exports.visite = (req, res) ->
     adopte.fetchProfile req.params.id, (err, json) ->

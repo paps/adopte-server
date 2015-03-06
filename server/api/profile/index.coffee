@@ -14,10 +14,11 @@ checkAuth = (req, res, next) ->
         res.send 401
 
 router.get '/', checkAuth, controller.index
-router.get '/:id', checkAuth, controller.get
 router.get '/visite/:id/:mails/:charmes/:visites/:paniers', checkAuth, controller.visite
 router.get '/charme/:id', checkAuth, controller.charme
 router.get '/avis/:id/:avis', checkAuth, controller.avis
 router.post '/notes/:id', checkAuth, controller.notes
+router.get '/liste-charme', checkAuth, controller.listeCharme
+router.get '/:id', checkAuth, controller.get
 
 module.exports = router

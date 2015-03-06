@@ -23,7 +23,8 @@
     "passport": "~0.2.0",
     "passport-local": "~0.1.6",
     "composable-middleware": "^0.3.0",
-    "connect-mongo": "^0.4.1"
+    "connect-mongo": "^0.4.1",
+    "underscore": "*"
   },
   "devDependencies": {
     "grunt": "~0.4.4",
