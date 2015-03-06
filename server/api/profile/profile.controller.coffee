@@ -38,7 +38,7 @@ exports.listeCharme = (req, res) ->
             ids = []
             for profile in profiles
                 ids.push profile.id
-            res.json ids
+            res.json ids.reverse() # best charms-by-visits ratio first
 
 exports.visite = (req, res) ->
     adopte.fetchProfile req.params.id, (err, json) ->
