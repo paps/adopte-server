@@ -263,8 +263,8 @@ avisBox = (profile) ->
     status = ($ '<div>')
     div.append status
 
-    if (profile.avis is null) or (profile.avis is '') or (profile.avis is 'none')
-        window.onbeforeunload = () -> 'Pas d\'avis sur ce profile ou quoi ?!'
+    #if (profile.avis is null) or (profile.avis is '') or (profile.avis is 'none')
+    #    window.onbeforeunload = () -> 'Pas d\'avis sur ce profile ou quoi ?!'
 
     setAvis = (avis) ->
         status.text 'Enregistrement de l\'avis...'
@@ -274,7 +274,7 @@ avisBox = (profile) ->
             url: aumConfig.host + 'api/profiles/avis/' + profile.id + '/' + avis + '?key=' + aumConfig.key
         ).done((profile) ->
             status.text 'Avis enregistré.'
-            window.onbeforeunload = null
+            #window.onbeforeunload = null
         ).fail ajaxError
     avisNope.click () -> setAvis 'nope'
     avisExcellent.click () -> setAvis 'excellent'
