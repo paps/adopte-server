@@ -495,5 +495,4 @@ betterMail = () ->
 
     ($ 'body').css('background', 'rgb(223, 239, 254)')
 
-AUM.ParticleRain.init = () -> console.log 'CACA'
-console.log 'toto'
+AUM.ParticleRain.init = () ->
