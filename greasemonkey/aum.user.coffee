@@ -425,7 +425,48 @@ notesBox = (profile) ->
 
 # --------------------------------------------------------------------------------------------------------------------------
 
+drawCharmBox = () ->
+    box = ($ '<div>')
+        .css('position', 'absolute')
+        .css('overflow', 'auto')
+        .css('z-index', '1000')
+        .css('width', '255px')
+        .css('height', '700px')
+        .css('top', (($ '#content').offset().top + 20) + 'px')
+        .css('left', (($ '#content').offset().left - 258) + 'px')
+        .css('background-color', '#fff')
+        .css('border', '1px solid #ccc')
+        .css('padding', '2px')
+        .css('font-family', 'Monospace')
+        .css('font-size', '10px')
+    box.text 'Loading...'
+    ($ 'body').append box
+    $.ajax(
+        type: 'GET'
+        dataType: 'json'
+        url: aumConfig.host + 'api/profiles/liste-charme-profils?key=' + aumConfig.key
+    ).done((profiles) ->
+        box.empty()
+        box.append ($ '<h3>').text 'Bientôt charmées'
+        for p in profiles
+            div = ($ '<div>')
+                .css('border-bottom', '1px solid #ccc')
+                .css('padding-bottom', '10px')
+                .css('margin-bottom', '10px')
+                .css('font-weight', 'bold')
+            a = ($ '<a>').attr('href', '/profile/' + p.id).css 'color', '#111'
+            a.append ($ '<div>').text p.derniereVisite.json.pseudo + ' (' + Math.round((p.derniereVisite.stats.charmes / p.derniereVisite.stats.visites) * 100) + '%)'
+            for i in [1 .. 5]
+                url = p.derniereVisite.json.cover.substring(0, p.derniereVisite.json.cover.length - 2) + '/thumb0_' + i + '.jpg'
+                a.append ($ '<img>').attr('alt', '').attr 'src', url
+            div.append a
+            box.append div
+    ).fail ajaxError
+
+# --------------------------------------------------------------------------------------------------------------------------
+
 betterMail = () ->
+    drawCharmBox()
     currentProfileId = null
     removeNotesBox = () ->
         if ($ '#aumNotesBox').length
