@@ -25,7 +25,7 @@ exports.listeCharme = (req, res) ->
         'charmesBot.0': { $exists: no }
         'visites.0': { $exists: no }
         'charmes.0': { $exists: no }
-        'derniereVisite': { $gte: yesterday },
+        'derniereVisite.date': { $gte: yesterday },
         (err, profiles) ->
             return handleError(res, err) if err
             keptProfiles = []
