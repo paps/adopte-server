@@ -18,29 +18,59 @@ exports.get = (req, res) ->
         return res.send(404) unless profile
         res.json profile
 
-exports.listeCharme = (req, res) ->
+getGoodProfiles = (done) ->
     yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
     Profile.find
-        'visitesBot.0': { $exists: yes }
-        'charmesBot.0': { $exists: no }
-        'visites.0': { $exists: no }
-        'charmes.0': { $exists: no }
-        'derniereVisite.date': { $gte: yesterday },
+        'avis': { $ne: 'nope' } # ignore bad profiles
+        'visitesBot.0': { $exists: yes } # only charm bot-visited profiles
+        'charmesBot.0': { $exists: no } # never charm a profile twice
+        'charmes.0': { $exists: no } # never charm a profile twice
+        #'visites.0': { $exists: no } # commented to allow bot-charms to already human-visited profiles
+        'derniereVisite.date': { $gte: yesterday }, # only get profiles that were visited yesterday
         (err, profiles) ->
-            return handleError(res, err) if err
-            keptProfiles = []
+            return done(err) if err
+            goodProfiles = []
             for profile in profiles
                 stats = profile.derniereVisite.stats
                 if isFinite(stats.charmes) and isFinite(stats.visites) and isFinite(stats.mails)
                     if (stats.charmes > 0) and (stats.visites > 0) and (stats.mails > 0)
                         if stats.visites > stats.charmes
                             profile.cvRatio = stats.charmes / stats.visites
-                            keptProfiles.push profile
-            profiles = _.sortBy keptProfiles, (p) -> p.cvRatio
-            ids = []
-            for profile in profiles
-                ids.push profile.id
-            res.json ids.reverse() # best charms-by-visits ratio first
+                            goodProfiles.push profile
+            # sort by C/V ratio
+            goodProfiles = _.sortBy goodProfiles, (p) -> p.cvRatio
+            # reverse to get best first
+            done null, goodProfiles.reverse()
+
+exports.listeCharme = (req, res) ->
+    getGoodProfiles (err, profiles) ->
+        return handleError(res, err) if err
+        ids = []
+        for profile in profiles
+            ids.push profile.id
+        res.json ids
+
+exports.listeCharmeProfils = (req, res) ->
+    getGoodProfiles (err, profiles) ->
+        return handleError(res, err) if err
+        res.json profiles.slice 0, 30
+
+exports.listeCharme = (req, res) ->
+    getGoodProfiles (err, profiles) ->
+        return handleError(res, err) if err
+        keptProfiles = []
+        for profile in profiles
+            stats = profile.derniereVisite.stats
+            if isFinite(stats.charmes) and isFinite(stats.visites) and isFinite(stats.mails)
+                if (stats.charmes > 0) and (stats.visites > 0) and (stats.mails > 0)
+                    if stats.visites > stats.charmes
+                        profile.cvRatio = stats.charmes / stats.visites
+                        keptProfiles.push profile
+        profiles = _.sortBy keptProfiles, (p) -> p.cvRatio
+        ids = []
+        for profile in profiles
+            ids.push profile.id
+        res.json ids.reverse() # best charms-by-visits ratio first
 
 exports.visite = (req, res) ->
     adopte.fetchProfile req.params.id, (err, json) ->
