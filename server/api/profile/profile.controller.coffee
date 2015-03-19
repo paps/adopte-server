@@ -19,11 +19,13 @@ exports.get = (req, res) ->
         res.json profile
 
 exports.listeCharme = (req, res) ->
+    yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
     Profile.find
         'visitesBot.0': { $exists: yes }
         'charmesBot.0': { $exists: no }
         'visites.0': { $exists: no }
-        'charmes.0': { $exists: no },
+        'charmes.0': { $exists: no }
+        'derniereVisite': { $gte: yesterday },
         (err, profiles) ->
             return handleError(res, err) if err
             keptProfiles = []
