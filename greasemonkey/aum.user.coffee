@@ -349,6 +349,48 @@ showConfigBox = () ->
 
 # --------------------------------------------------------------------------------------------------------------------------
 
+showBotStatusBox = () ->
+    div = ($ '<div>')
+        .css('position', 'absolute')
+        .css('top', '85px')
+        .css('left', '10px')
+        .css('background-color', '#ccc')
+        .css('border', '1px solid #888')
+        .css('padding', '4px')
+        .css('font-family', 'Monospace')
+        .css('font-size', '12px')
+    statusSpan = ($ '<span>')
+    timeSpan = ($ '<span>')
+    div.append ($ '<span>').css('font-weight', 'bold').text 'Bot Status'
+    div.append ($ '<br />')
+    div.append statusSpan
+    div.append ($ '<br />')
+    div.append timeSpan
+    ($ 'body').append div
+    getStatus = () ->
+        $.ajax(
+            type: 'GET'
+            dataType: 'json'
+            url: aumConfig.host + 'api/profiles/bot-status?key=' + aumConfig.key
+        ).done((data) ->
+            statusSpan.text data.text
+            if data.seconds < 60
+                timeSpan.text data.seconds + ' seconds ago'
+            else if data.seconds < 60 * 20
+                timeSpan.text Math.round(data.seconds / 60) + ' minutes ago'
+            else
+                timeSpan.text '/!\\ ' + Math.round(data.seconds / 60) + ' minutes ago /!\\'
+        ).fail((jqXhr, textStatus, err) ->
+            console.log '>>> Ajax failure: %j', { jqXhr: jqXhr, textStatus: textStatus, err: err }
+            statusSpan.text 'Request failed!'
+            timeSpan.text 'See console'
+        ).always () ->
+            setTimeout (() -> getStatus()), 10000
+    setTimeout (() -> getStatus()), 500
+
+
+# --------------------------------------------------------------------------------------------------------------------------
+
 notesSaverStarted = no
 notesSaverProfileId = null
 notesSaverText = null
@@ -432,7 +474,7 @@ drawCharmBox = () ->
         .css('z-index', '1000')
         .css('width', '255px')
         .css('height', '700px')
-        .css('top', (($ '#content').offset().top + 20) + 'px')
+        .css('top', (($ '#content').offset().top + 80) + 'px')
         .css('left', (($ '#content').offset().left - 258) + 'px')
         .css('background-color', '#fff')
         .css('border', '1px solid #ccc')
@@ -524,6 +566,7 @@ betterMail = () ->
         ($ '#profile-complete-rate').hide()
     betterTitle()
     showConfigBox()
+    showBotStatusBox()
 
     if ($ '#view_description_girl').length
         pageProfileMeuf()

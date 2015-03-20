@@ -163,14 +163,14 @@ exports.postBotStatus = (req, res) ->
         botStatusTime = Date.now()
         botStatusText = s
         res.send 200
+        console.log "* [BOT] New status: " + s
     else
         res.send 400
-    console.log req.body
 
 exports.getBotStatus = (req, res) ->
     if botStatusText.length and botStatusTime > 0
         res.json 200,
             text: botStatusText
-            seconds: (Date.now() - botStatusTime) / 1000
+            seconds: Math.round((Date.now() - botStatusTime) / 1000)
     else
         res.send 404
