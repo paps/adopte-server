@@ -194,7 +194,7 @@ exports.listeVisite = (req, res) ->
                     return done null
                 else
                     if profile
-                        days = Math round((Date.now() - profile.derniereVisite.date.getTime()) / (24 * 60 * 60 * 1000))
+                        days = Math.round((Date.now() - profile.derniereVisite.date.getTime()) / (24 * 60 * 60 * 1000))
                         if profile.derniereVisite.date.getTime() < dateLimit.getTime()
                             console.log '* ' + id + ': Visited ' + days + ' days ago -> visiting'
                             idsToVisit.push id
