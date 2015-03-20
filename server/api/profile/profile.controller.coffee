@@ -165,6 +165,7 @@ exports.postBotStatus = (req, res) ->
         res.send 200
     else
         res.send 400
+    console.log req.body
 
 exports.getBotStatus = (req, res) ->
     if botStatusText.length and botStatusTime > 0
