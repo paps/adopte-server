@@ -359,8 +359,8 @@ showBotStatusBox = () ->
         .css('padding', '4px')
         .css('font-family', 'Monospace')
         .css('font-size', '12px')
-    statusSpan = ($ '<span>')
-    timeSpan = ($ '<span>')
+    statusSpan = ($ '<span>').text 'Loading...'
+    timeSpan = ($ '<span>').text '...'
     div.append ($ '<span>').css('font-weight', 'bold').text 'Bot Status'
     div.append ($ '<br />')
     div.append statusSpan
@@ -474,7 +474,7 @@ drawCharmBox = () ->
         .css('z-index', '1000')
         .css('width', '255px')
         .css('height', '700px')
-        .css('top', (($ '#content').offset().top + 80) + 'px')
+        .css('top', (($ '#content').offset().top + 50) + 'px')
         .css('left', (($ '#content').offset().left - 258) + 'px')
         .css('background-color', '#fff')
         .css('border', '1px solid #ccc')
@@ -497,7 +497,7 @@ drawCharmBox = () ->
                 .css('margin-bottom', '10px')
                 .css('font-weight', 'bold')
             a = ($ '<a>').attr('href', '/profile/' + p.id).css 'color', '#111'
-            a.append ($ '<div>').text p.derniereVisite.json.pseudo + ' (' + Math.round((p.derniereVisite.stats.charmes / p.derniereVisite.stats.visites) * 100) + '%)'
+            a.append ($ '<div>').text p.derniereVisite.json.pseudo + ' (' + round((p.derniereVisite.stats.charmes / p.derniereVisite.stats.visites) * 100, 1) + '%)'
             for i in [1 .. 5]
                 url = p.derniereVisite.json.cover.substring(0, p.derniereVisite.json.cover.length - 2) + '/thumb0_' + i + '.jpg'
                 a.append ($ '<img>').attr('alt', '').attr 'src', url

@@ -18,6 +18,7 @@ router.get '/visite/:id/:mails/:charmes/:visites/:paniers', checkAuth, controlle
 router.get '/charme/:id', checkAuth, controller.charme
 router.get '/avis/:id/:avis', checkAuth, controller.avis
 router.post '/notes/:id', checkAuth, controller.notes
+router.post '/liste-visite', checkAuth, controller.listeVisite
 router.get '/liste-charme', checkAuth, controller.listeCharme
 router.get '/liste-charme-profils', checkAuth, controller.listeCharmeProfils
 router.post '/bot-status', checkAuth, controller.postBotStatus

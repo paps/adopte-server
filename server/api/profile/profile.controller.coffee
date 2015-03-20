@@ -3,6 +3,7 @@
 Profile = require './profile.model'
 adopte = require '../../components/adopte'
 _ = require 'underscore'
+async = require 'async'
 
 handleError = (res, err) ->
     res.send 500, err
@@ -174,3 +175,38 @@ exports.getBotStatus = (req, res) ->
             seconds: Math.round((Date.now() - botStatusTime) / 1000)
     else
         res.send 404
+
+exports.listeVisite = (req, res) ->
+    ids = req.param 'ids'
+    if (typeof ids) isnt 'string'
+        res.send 400
+        return
+    days = 5
+    dateLimit = new Date(Date.now() - (24 * 60 * 60 * 1000) * days)
+    idsToVisit = []
+    ids = ids.split ','
+    idIterator = (id, done) ->
+        id = parseInt id, 10
+        if isFinite(id) and id > 100
+            Profile.findOne {id: id}, (err, profile) ->
+                if err
+                    console.log '* ' + id + ': Error: ' + err.toString()
+                    return done null
+                else
+                    if profile
+                        days = Math round((Date.now() - profile.derniereVisite.date.getTime()) / (24 * 60 * 60 * 1000))
+                        if profile.derniereVisite.date.getTime() < dateLimit.getTime()
+                            console.log '* ' + id + ': Visited ' + days + ' days ago -> visiting'
+                            idsToVisit.push id
+                        else
+                            console.log '* ' + id + ': Visited ' + days + ' days ago'
+                    else
+                        console.log '* ' + id + ': Not found -> visiting'
+                        idsToVisit.push id
+                    done null
+        else
+            console.log '* Invalid profile ID ' + id
+            done null
+    async.eachSeries ids, idIterator, () ->
+        console.log '* Returning ' + idsToVisit.length + ' IDs to visit'
+        res.json 200, idsToVisit
