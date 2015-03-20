@@ -20,6 +20,8 @@ router.get '/avis/:id/:avis', checkAuth, controller.avis
 router.post '/notes/:id', checkAuth, controller.notes
 router.get '/liste-charme', checkAuth, controller.listeCharme
 router.get '/liste-charme-profils', checkAuth, controller.listeCharmeProfils
+router.post '/bot-status', checkAuth, controller.postBotStatus
+router.get '/bot-status', checkAuth, controller.getBotStatus
 router.get '/:id', checkAuth, controller.get
 
 module.exports = router
