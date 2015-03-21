@@ -498,8 +498,10 @@ drawCharmBox = () ->
                 .css('font-weight', 'bold')
             a = ($ '<a>').attr('href', '/profile/' + p.id).css 'color', '#111'
             a.append ($ '<div>').text p.derniereVisite.json.pseudo + ' (' + round((p.derniereVisite.stats.charmes / p.derniereVisite.stats.visites) * 100, 1) + '%)'
-            for i in [1 .. 5]
-                url = p.derniereVisite.json.cover.substring(0, p.derniereVisite.json.cover.length - 2) + '/thumb0_' + i + '.jpg'
+            for url in p.derniereVisite.json.pics
+                idx = url.lastIndexOf('/')
+                nb = url.substring(idx + 1);
+                url = url.substring(0, idx) + '/thumb0_' + nb + '.jpg'
                 a.append ($ '<img>').attr('alt', '').attr 'src', url
             div.append a
             box.append div
