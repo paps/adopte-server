@@ -22,6 +22,7 @@ exports.get = (req, res) ->
 getGoodProfiles = (done) ->
     days = 3
     dateLimit = new Date(Date.now() - (24 * 60 * 60 * 1000) * days)
+    timer = Date.now()
     Profile.find
         'avis': { $ne: 'nope' } # ignore bad profiles
         #'visitesBot.0': { $exists: yes } # only charm bot-visited profiles
@@ -31,6 +32,8 @@ getGoodProfiles = (done) ->
         'derniereVisite.date': { $gte: dateLimit }, # only get profiles that were visited recently
         (err, profiles) ->
             return done(err) if err
+            console.log ' >> getGoodProfiles MongoDB query: ' + (Date.now() - timer) + 'ms'
+            timer = Date.now()
             goodProfiles = []
             for profile in profiles
                 stats = profile.derniereVisite.stats
@@ -44,6 +47,7 @@ getGoodProfiles = (done) ->
             goodProfiles = _.sortBy goodProfiles, (p) -> p.cvRatio
             # reverse to get best first
             done null, goodProfiles.reverse()
+            console.log ' >> getGoodProfiles trim+sort+reverse: ' + (Date.now() - timer) + 'ms'
 
 # returns a list of IDs
 exports.listeCharme = (req, res) ->
@@ -69,10 +73,14 @@ exports.visite = (req, res) ->
             else
                 visiteParBot = no
             stats =
-                mails: req.params.mails
-                charmes: req.params.charmes
-                visites: req.params.visites
-                paniers: req.params.paniers
+                mails: parseInt req.params.mails, 10
+                charmes: parseInt req.params.charmes, 10
+                visites: parseInt req.params.visites, 10
+                paniers: parseInt req.params.paniers, 10
+            if (stats.mails is null) or (not isFinite(stats.mails)) then return handleError res, 'Invalid mails parameter'
+            if (stats.charmes is null) or (not isFinite(stats.charmes)) then return handleError res, 'Invalid charmes parameter'
+            if (stats.visites is null) or (not isFinite(stats.visites)) then return handleError res, 'Invalid visites parameter'
+            if (stats.paniers is null) or (not isFinite(stats.paniers)) then return handleError res, 'Invalid paniers parameter'
             if profile
                 if visiteParBot
                     profile.visitesBot.push Date.now()

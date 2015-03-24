@@ -6,6 +6,7 @@ auth = require '../../auth/simpleApiAuth'
 
 router = express.Router()
 
-router.get '/', auth, controller.index
+router.get '/add/:contacts/:visites', auth, controller.add
+router.get '/csv', auth, controller.csv
 
 module.exports = router

@@ -5,8 +5,8 @@ Schema = mongoose.Schema
 
 statsSchema = new Schema {
     date: [Date]
-    charmes: Number
-    mails: Number
+    contacts: Number
+    visites: Number
 }
 
 module.exports = mongoose.model 'Stats', statsSchema

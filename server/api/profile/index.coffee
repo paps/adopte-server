@@ -6,7 +6,7 @@ auth = require '../../auth/simpleApiAuth'
 
 router = express.Router()
 
-router.get '/', auth, controller.index
+#router.get '/', auth, controller.index
 router.get '/visite/:id/:mails/:charmes/:visites/:paniers', auth, controller.visite
 router.get '/charme/:id', auth, controller.charme
 router.get '/avis/:id/:avis', auth, controller.avis
