@@ -2,27 +2,20 @@
 
 express = require 'express'
 controller = require './profile.controller'
-config = require '../../config/config'
-auth = require "../../auth/auth.service"
+auth = require '../../auth/simpleApiAuth'
 
 router = express.Router()
 
-checkAuth = (req, res, next) ->
-    if (req.query.key is config.adopte.key)
-        next()
-    else
-        res.send 401
-
-router.get '/', checkAuth, controller.index
-router.get '/visite/:id/:mails/:charmes/:visites/:paniers', checkAuth, controller.visite
-router.get '/charme/:id', checkAuth, controller.charme
-router.get '/avis/:id/:avis', checkAuth, controller.avis
-router.post '/notes/:id', checkAuth, controller.notes
-router.post '/liste-visite', checkAuth, controller.listeVisite
-router.get '/liste-charme', checkAuth, controller.listeCharme
-router.get '/liste-charme-profils', checkAuth, controller.listeCharmeProfils
-router.post '/bot-status', checkAuth, controller.postBotStatus
-router.get '/bot-status', checkAuth, controller.getBotStatus
-router.get '/:id', checkAuth, controller.get
+router.get '/', auth, controller.index
+router.get '/visite/:id/:mails/:charmes/:visites/:paniers', auth, controller.visite
+router.get '/charme/:id', auth, controller.charme
+router.get '/avis/:id/:avis', auth, controller.avis
+router.post '/notes/:id', auth, controller.notes
+router.post '/liste-visite', auth, controller.listeVisite
+router.get '/liste-charme', auth, controller.listeCharme
+router.get '/liste-charme-profils', auth, controller.listeCharmeProfils
+router.post '/bot-status', auth, controller.postBotStatus
+router.get '/bot-status', auth, controller.getBotStatus
+router.get '/:id', auth, controller.get
 
 module.exports = router

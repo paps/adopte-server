@@ -38,7 +38,8 @@ getGoodProfiles = (done) ->
                     if (stats.charmes > 0) and (stats.visites > 0) and (stats.mails > 0)
                         if stats.visites > stats.charmes
                             profile.cvRatio = stats.charmes / stats.visites
-                            goodProfiles.push profile
+                            if 0.05 < profile.cvRatio < 0.8
+                                goodProfiles.push profile
             # sort by C/V ratio
             goodProfiles = _.sortBy goodProfiles, (p) -> p.cvRatio
             # reverse to get best first
@@ -51,7 +52,7 @@ exports.listeCharme = (req, res) ->
         ids = []
         for profile in profiles
             ids.push profile.id
-        res.json ids
+        res.json ids.slice 0, 200
 
 # returns the best 30 profiles
 exports.listeCharmeProfils = (req, res) ->
@@ -60,8 +61,7 @@ exports.listeCharmeProfils = (req, res) ->
         res.json profiles.slice 0, 30
 
 exports.visite = (req, res) ->
-    adopte.fetchProfile req.params.id, (err, json) ->
-        return handleError(res, err) if err
+    adopte.fetchProfile req.params.id, (adopteErr, json) ->
         Profile.findOne {id: req.params.id}, (err, profile) ->
             return handleError(res, err) if err
             if typeof(req.param 'bot') isnt 'undefined'
@@ -79,7 +79,10 @@ exports.visite = (req, res) ->
                 else
                     profile.visites.push Date.now()
                 profile.derniereVisite.date = Date.now()
-                profile.derniereVisite.json = json
+                if adopteErr
+                    console.log "* " + (if visiteParBot then "[BOT] " else "") + "AuM n'a pas retourné de JSON valide mais profil " + profile.id + " deja dans la base (" + adopteErr + ")"
+                else
+                    profile.derniereVisite.json = json
                 profile.markModified "derniereVisite.json"
                 profile.derniereVisite.stats = stats
                 profile.save (err) ->
@@ -87,6 +90,8 @@ exports.visite = (req, res) ->
                         return handleError(res, err)
                     res.json profile
                     console.log "* " + (if visiteParBot then "[BOT] " else "") + "Visite " + (profile.visites.length + profile.visitesBot.length) + " pour le profil " + profile.id
+            else if adopteErr
+                return handleError res, adopteErr
             else
                 profile =
                     id: req.params.id
