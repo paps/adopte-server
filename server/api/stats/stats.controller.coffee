@@ -29,4 +29,5 @@ exports.csv = (req, res) ->
             csv = ''
             for s in stats
                 csv += (s.date.getTime() / 1000) + ',' + s.contacts + ',' + s.visites + '\n'
+            res.header 'Content-Type', 'text/csv'
             res.send 200, csv
