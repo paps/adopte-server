@@ -10,7 +10,7 @@ config = require '../server/config/config'
 subscribeDate = config.adopte.subscribeDate
 serverUrl = config.adopte.serverUrl
 
-dryRun = yes
+dryRun = no
 
 oneDay = 24 * 60 * 60 * 1000
 
@@ -43,12 +43,14 @@ while curDate.getTime() < Date.now()
 
 if not dryRun
     iterator = (entry, done) ->
-        dateStr = entry.date.getFullYear() + '-' + (entry.date.getMonth() + 1) + '-' + entry.date.getDate()
-        needle.get serverUrl + 'api/stats/add/' + entry.contacts + '/' + entry.visits + '/' + dateStr + '?key=' + config.adopte.key, (err) ->
-            if err
-                console.log dateStr + ' FAILED! ' + err.toString()
-            else
-                console.log dateStr + ' OK'
-            done()
+        dateStr = entry.date.getFullYear() + '-' + (if (entry.date.getMonth() + 1) < 10 then '0' else '') + (entry.date.getMonth() + 1) + '-' + (if entry.date.getDate() < 10 then '0' else '') + entry.date.getDate()
+        needle.get serverUrl + 'api/stats/add/' + entry.contacts + '/' + entry.visits + '/' + dateStr + '?key=' + config.adopte.key,
+            rejectUnauthorized: no,
+            (err) ->
+                if err
+                    console.log dateStr + ' FAILED! ' + err.toString()
+                else
+                    console.log dateStr + ' OK'
+                done()
     async.eachSeries csv, iterator, () ->
         console.log 'Done!'
