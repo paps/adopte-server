@@ -20,3 +20,13 @@ exports.add = (req, res) ->
         console.log "* Nouvelles stats: " + stats.contacts + " contacts, " + stats.visites + " visites"
 
 exports.csv = (req, res) ->
+    Stats.find
+        $query: {}
+        $orderby:
+            date: 1,
+        (err, stats) ->
+            return handleError(res, err) if err
+            csv = ''
+            for s in stats
+                csv += (s.date.getTime() / 1000) + ',' + s.contacts + ',' + s.visites + '\n'
+            res.send 200, csv

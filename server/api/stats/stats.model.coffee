@@ -4,7 +4,7 @@ mongoose = require 'mongoose'
 Schema = mongoose.Schema
 
 statsSchema = new Schema {
-    date: [Date]
+    date: Date
     contacts: Number
     visites: Number
 }
