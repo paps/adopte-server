@@ -5,13 +5,23 @@ Stats = require './stats.model'
 handleError = (res, err) ->
     res.send 500, err
 
+parseDate = (d) ->
+    year = parseInt d.substr 0, 4
+    month = parseInt d.substr 5, 2
+    day = parseInt d.substr 8, 2
+    return new Date year, month - 1, day, 12
+
 exports.add = (req, res) ->
     contacts = parseInt req.params.contacts, 10
     visites = parseInt req.params.visites, 10
     if (contacts is null) or (not isFinite(contacts)) then return handleError res, 'Invalid contacts parameter'
     if (visites is null) or (not isFinite(visites)) then return handleError res, 'Invalid visites parameter'
+    if req.params.date
+        date = parseDate req.params.date
+    else
+        date = Date.now()
     stats =
-        date: Date.now()
+        date: date
         contacts: contacts
         visites: visites
     Stats.create stats, (err, stats) ->
