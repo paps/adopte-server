@@ -30,6 +30,8 @@ exports.add = (req, res) ->
         console.log "* Nouvelles stats: " + stats.contacts + " contacts, " + stats.visites + " visites"
 
 exports.csv = (req, res) ->
+    dateToString = (d) ->
+        d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate() + ' ' + (if d.getHours() < 10 then '0' else '') + d.getHours() + ':' + (if d.getMinutes() < 10 then '0' else '') + d.getMinutes()
     Stats.find
         $query: {}
         $orderby:
@@ -38,6 +40,6 @@ exports.csv = (req, res) ->
             return handleError(res, err) if err
             csv = ''
             for s in stats
-                csv += s.date.toISOString() + ',' + s.contacts + ',' + s.visites + '\n'
+                csv += (dateToString s.date) + ',' + s.contacts + ',' + s.visites + '\n'
             res.header 'Content-Type', 'text/csv'
             res.send 200, csv
