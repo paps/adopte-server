@@ -1,6 +1,6 @@
 'use strict'
 
-Stats = require './new-members.model'
+NewMembers = require './new-members.model'
 
 handleError = (res, err) ->
     res.send 500, err
