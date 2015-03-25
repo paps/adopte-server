@@ -10,6 +10,7 @@ module.exports = (app) ->
     app.use "/api/profiles", require("./api/profile")
     app.use "/api/users", require("./api/user")
     app.use "/api/stats", require("./api/stats")
+    app.use "/api/new-members", require("./api/new-members")
     app.use "/auth", require("./auth")
 
     # All undefined asset or api routes should return a 404
