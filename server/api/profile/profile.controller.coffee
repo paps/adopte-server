@@ -1,7 +1,7 @@
 'use strict'
 
 Profile = require './profile.model'
-NewMembers = require './new-members.model'
+NewMembers = require './../new-members/new-members.model'
 adopte = require '../../components/adopte'
 _ = require 'underscore'
 async = require 'async'
