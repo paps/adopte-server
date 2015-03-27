@@ -75,7 +75,7 @@ exports.listeCharmeProfilsHier = (req, res) ->
             { 'charmes.0': { $gte: dateLimit } }
         ],
         (err, profiles) ->
-            return done(err) if err
+            return handleError(res, err) if err
             console.log ' >> listeCharmeProfilsHier MongoDB query: ' + (Date.now() - timer) + 'ms'
             for profile in profiles
                 profile.cvRatio = 0
@@ -87,7 +87,7 @@ exports.listeCharmeProfilsHier = (req, res) ->
             # sort by C/V ratio
             profiles = _.sortBy profiles, (p) -> p.cvRatio
             # reverse to get best first
-            done null, profiles.reverse()
+            res.json profiles.reverse()
 
 exports.visite = (req, res) ->
     adopte.fetchProfile req.params.id, (adopteErr, json) ->
