@@ -71,8 +71,8 @@ exports.listeCharmeProfilsHier = (req, res) ->
     Profile.find
         'avis': { $ne: 'nope' } # ignore bad profiles
         $or: [
-            { 'charmesBot.-1': { $gte: dateLimit } }
-            { 'charmes.-1': { $gte: dateLimit } }
+            { 'charmesBot': { $elemMatch: { $gte: dateLimit } } },
+            { 'charmes': { $elemMatch: { $gte: dateLimit } } },
         ],
         (err, profiles) ->
             return handleError(res, err) if err
