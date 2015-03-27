@@ -25,7 +25,8 @@
     "composable-middleware": "^0.3.0",
     "connect-mongo": "^0.4.1",
     "underscore": "*",
-    "async": "*"
+    "async": "*",
+    "knuth-shuffle": "1.0.x"
   },
   "devDependencies": {
     "grunt": "~0.4.4",

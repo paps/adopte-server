@@ -5,6 +5,7 @@ NewMembers = require './../new-members/new-members.model'
 adopte = require '../../components/adopte'
 _ = require 'underscore'
 async = require 'async'
+shuffle = require('knuth-shuffle').knuthShuffle
 
 handleError = (res, err) ->
     res.send 500, err
@@ -105,17 +106,7 @@ exports.nouvellesInscrites = (req, res) ->
                 'visites.0': { $exists: no }
                 (err, profiles) ->
                     return handleError(res, err) if err
-                    for profile in profiles
-                        profile.cvRatio = 0
-                        stats = profile.derniereVisite.stats
-                        if isFinite(stats.charmes) and isFinite(stats.visites) and isFinite(stats.mails)
-                            if (stats.charmes > 0) and (stats.visites > 0) and (stats.mails > 0)
-                                if stats.visites > stats.charmes
-                                    profile.cvRatio = stats.charmes / stats.visites
-                    # sort by C/V ratio
-                    profiles = _.sortBy profiles, (p) -> p.cvRatio
-                    # reverse to get best first
-                    res.json profiles.reverse()
+                    res.json shuffle profiles
 
 exports.visite = (req, res) ->
     adopte.fetchProfile req.params.id, (adopteErr, json) ->
