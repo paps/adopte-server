@@ -101,7 +101,8 @@ exports.nouvellesInscrites = (req, res) ->
             return handleError(res, err) if err
             Profile.find
                 'avis': { $ne: 'nope' } # ignore bad profiles
-                'id': {$gte: newMember.id},
+                'id': { $gte: newMember.id, $lt: 200000000 },
+                'visites.0': { $exists: no }
                 (err, profiles) ->
                     return handleError(res, err) if err
                     for profile in profiles
