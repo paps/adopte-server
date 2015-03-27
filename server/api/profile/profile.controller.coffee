@@ -1,6 +1,7 @@
 'use strict'
 
 Profile = require './profile.model'
+NewMembers = require './new-members.model'
 adopte = require '../../components/adopte'
 _ = require 'underscore'
 async = require 'async'
@@ -64,10 +65,10 @@ exports.listeCharmeProfils = (req, res) ->
         return handleError(res, err) if err
         res.json profiles.slice 0, 30
 
+# returns all profiles that were charmed < 24h ago
 exports.listeCharmeProfilsHier = (req, res) ->
     days = 1
     dateLimit = new Date(Date.now() - (24 * 60 * 60 * 1000) * days)
-    timer = Date.now()
     Profile.find
         'avis': { $ne: 'nope' } # ignore bad profiles
         $or: [
@@ -76,7 +77,6 @@ exports.listeCharmeProfilsHier = (req, res) ->
         ],
         (err, profiles) ->
             return handleError(res, err) if err
-            console.log ' >> listeCharmeProfilsHier MongoDB query: ' + (Date.now() - timer) + 'ms'
             for profile in profiles
                 profile.cvRatio = 0
                 stats = profile.derniereVisite.stats
@@ -88,6 +88,33 @@ exports.listeCharmeProfilsHier = (req, res) ->
             profiles = _.sortBy profiles, (p) -> p.cvRatio
             # reverse to get best first
             res.json profiles.reverse()
+
+exports.nouvellesInscrites = (req, res) ->
+    days = 1
+    dateLimit = new Date(Date.now() - (24 * 60 * 60 * 1000) * days)
+    NewMembers.findOne
+        $query:
+            'date': { $lte: dateLimit }
+        $orderby:
+            id: -1,
+        (err, newMember) ->
+            return handleError(res, err) if err
+            Profile.find
+                'avis': { $ne: 'nope' } # ignore bad profiles
+                'id': {$gte: newMember.id},
+                (err, profiles) ->
+                    return handleError(res, err) if err
+                    for profile in profiles
+                        profile.cvRatio = 0
+                        stats = profile.derniereVisite.stats
+                        if isFinite(stats.charmes) and isFinite(stats.visites) and isFinite(stats.mails)
+                            if (stats.charmes > 0) and (stats.visites > 0) and (stats.mails > 0)
+                                if stats.visites > stats.charmes
+                                    profile.cvRatio = stats.charmes / stats.visites
+                    # sort by C/V ratio
+                    profiles = _.sortBy profiles, (p) -> p.cvRatio
+                    # reverse to get best first
+                    res.json profiles.reverse()
 
 exports.visite = (req, res) ->
     adopte.fetchProfile req.params.id, (adopteErr, json) ->

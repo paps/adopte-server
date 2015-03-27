@@ -523,6 +523,19 @@ botBoxCharmeesHier = (contentDiv) ->
         drawProfileList contentDiv, profiles
     ).fail ajaxError
 
+botBoxNouvellesInscrites = (contentDiv) ->
+    contentDiv.append ($ '<h3>').text 'Nouvelles inscrites'
+    contentDiv.append ($ '<div>').text 'Loading...'
+    $.ajax(
+        type: 'GET'
+        dataType: 'json'
+        url: aumConfig.host + 'api/profiles/nouvelles-inscrites?key=' + aumConfig.key
+    ).done((profiles) ->
+        contentDiv.empty()
+        contentDiv.append ($ '<h3>').text 'Nouvelles inscrites'
+        drawProfileList contentDiv, profiles
+    ).fail ajaxError
+
 botBox = () ->
     box = ($ '<div>')
         .css('position', 'absolute')
@@ -545,6 +558,10 @@ botBox = () ->
         {
             name: 'Charmées hier'
             func: botBoxCharmeesHier
+        },
+        {
+            name: 'Nouvelles inscrites'
+            func: botBoxNouvellesInscrites
         },
     ]
     tabDiv = ($ '<div>').css('margin-bottom', '15px').css('text-align', 'center').css('font-size', '14px')
