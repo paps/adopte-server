@@ -263,18 +263,14 @@ avisBox = (profile) ->
     status = ($ '<div>')
     div.append status
 
-    #if (profile.avis is null) or (profile.avis is '') or (profile.avis is 'none')
-    #    window.onbeforeunload = () -> 'Pas d\'avis sur ce profile ou quoi ?!'
-
     setAvis = (avis) ->
         status.text 'Enregistrement de l\'avis...'
         $.ajax(
             type: 'GET'
             dataType: 'json'
             url: aumConfig.host + 'api/profiles/avis/' + profile.id + '/' + avis + '?key=' + aumConfig.key
-        ).done((profile) ->
+        ).done(() ->
             status.text 'Avis enregistré.'
-            #window.onbeforeunload = null
         ).fail ajaxError
     avisNope.click () -> setAvis 'nope'
     avisExcellent.click () -> setAvis 'excellent'
@@ -467,7 +463,67 @@ notesBox = (profile) ->
 
 # --------------------------------------------------------------------------------------------------------------------------
 
-drawCharmBox = () ->
+drawProfileList = (contentDiv, profiles) ->
+    for p in profiles
+        div = ($ '<div>')
+            .css('border-bottom', '1px solid #ccc')
+            .css('padding-bottom', '10px')
+            .css('margin-bottom', '10px')
+            .css('font-weight', 'bold')
+        aPseudo = ($ '<a>').attr('href', '/profile/' + p.id).css 'color', '#111'
+        aPseudo.text p.derniereVisite.json.pseudo + ' (' + round((p.derniereVisite.stats.charmes / p.derniereVisite.stats.visites) * 100, 1) + '%)'
+        aNope = ($ '<a>').css('cursor', 'pointer').text('Nope')
+        ((nope, id, d) ->
+            nope.click () ->
+                nope.text '...'
+                $.ajax(
+                    type: 'GET'
+                    dataType: 'json'
+                    url: aumConfig.host + 'api/profiles/avis/' + id + '/nope?key=' + aumConfig.key
+                ).done(() ->
+                    d.text 'Nope!'
+                ).fail ajaxError
+        )(aNope, p.id, div)
+        aPhotos = ($ '<a>').attr('href', '/profile/' + p.id)
+        for url in p.derniereVisite.json.pics
+            idx = url.lastIndexOf('/')
+            nb = url.substring(idx + 1);
+            url = url.substring(0, idx) + '/thumb0_' + nb + '.jpg'
+            aPhotos.append ($ '<img>').attr('alt', '').attr 'src', url
+        div.append aPseudo
+        div.append $('<span>').text ' - '
+        div.append aNope
+        div.append $('<br>')
+        div.append aPhotos
+        contentDiv.append div
+
+botBoxCharmeesCeSoir = (contentDiv) ->
+    contentDiv.append ($ '<h3>').text 'Charmées ce soir'
+    contentDiv.append ($ '<div>').text 'Loading...'
+    $.ajax(
+        type: 'GET'
+        dataType: 'json'
+        url: aumConfig.host + 'api/profiles/liste-charme-profils?key=' + aumConfig.key
+    ).done((profiles) ->
+        contentDiv.empty()
+        contentDiv.append ($ '<h3>').text 'Charmées ce soir'
+        drawProfileList contentDiv, profiles
+    ).fail ajaxError
+
+botBoxCharmeesHier = (contentDiv) ->
+    contentDiv.append ($ '<h3>').text 'Charmées hier'
+    contentDiv.append ($ '<div>').text 'Loading...'
+    $.ajax(
+        type: 'GET'
+        dataType: 'json'
+        url: aumConfig.host + 'api/profiles/liste-charme-profils-hier?key=' + aumConfig.key
+    ).done((profiles) ->
+        contentDiv.empty()
+        contentDiv.append ($ '<h3>').text 'Charmées hier'
+        drawProfileList contentDiv, profiles
+    ).fail ajaxError
+
+botBox = () ->
     box = ($ '<div>')
         .css('position', 'absolute')
         .css('overflow', 'auto')
@@ -481,36 +537,39 @@ drawCharmBox = () ->
         .css('padding', '2px')
         .css('font-family', 'Monospace')
         .css('font-size', '10px')
-    box.text 'Loading...'
+    tabs = [
+        {
+            name: 'Charmées ce soir'
+            func: botBoxCharmeesCeSoir
+        },
+        {
+            name: 'Charmées hier'
+            func: botBoxCharmeesHier
+        },
+    ]
+    tabDiv = ($ '<div>').css('margin-bottom', '15px').css('text-align', 'center').css('font-size', '14px')
+    contentDiv = ($ '<div>')
+    for tab in tabs
+        ((tab) ->
+            tab.link = ($ '<a>').text(tab.name).click () ->
+                box.scrollTop 0
+                for t in tabs
+                    t.link.css 'font-weight', 'normal'
+                    t.link.css 'border', 'none'
+                tab.link.css 'font-weight', 'bold'
+                tab.link.css 'border', '1px solid #888'
+                contentDiv.empty()
+                tab.func contentDiv
+            tabDiv.append tab.link
+            tabDiv.append ($ '<br>')
+        )(tab)
+    box.append tabDiv
+    box.append contentDiv
     ($ 'body').append box
-    $.ajax(
-        type: 'GET'
-        dataType: 'json'
-        url: aumConfig.host + 'api/profiles/liste-charme-profils?key=' + aumConfig.key
-    ).done((profiles) ->
-        box.empty()
-        box.append ($ '<h3>').text 'Bientôt charmées'
-        for p in profiles
-            div = ($ '<div>')
-                .css('border-bottom', '1px solid #ccc')
-                .css('padding-bottom', '10px')
-                .css('margin-bottom', '10px')
-                .css('font-weight', 'bold')
-            a = ($ '<a>').attr('href', '/profile/' + p.id).css 'color', '#111'
-            a.append ($ '<div>').text p.derniereVisite.json.pseudo + ' (' + round((p.derniereVisite.stats.charmes / p.derniereVisite.stats.visites) * 100, 1) + '%)'
-            for url in p.derniereVisite.json.pics
-                idx = url.lastIndexOf('/')
-                nb = url.substring(idx + 1);
-                url = url.substring(0, idx) + '/thumb0_' + nb + '.jpg'
-                a.append ($ '<img>').attr('alt', '').attr 'src', url
-            div.append a
-            box.append div
-    ).fail ajaxError
 
 # --------------------------------------------------------------------------------------------------------------------------
 
 betterMail = () ->
-    drawCharmBox()
     currentProfileId = null
     removeNotesBox = () ->
         if ($ '#aumNotesBox').length
@@ -578,6 +637,7 @@ betterMail = () ->
         processThumbs()
     else if ((document.URL.indexOf '.com/messages') > 0)
         betterMail()
+        botBox()
 
     ($ 'body').css('background', 'rgb(223, 239, 254)')
 

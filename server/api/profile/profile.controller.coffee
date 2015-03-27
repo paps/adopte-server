@@ -64,6 +64,30 @@ exports.listeCharmeProfils = (req, res) ->
         return handleError(res, err) if err
         res.json profiles.slice 0, 30
 
+exports.listeCharmeProfilsHier = (req, res) ->
+    days = 1
+    dateLimit = new Date(Date.now() - (24 * 60 * 60 * 1000) * days)
+    timer = Date.now()
+    Profile.find
+        'avis': { $ne: 'nope' } # ignore bad profiles
+        'charmesBot.0': { $exists: yes } # never charm a profile twice
+        'charmes.0': { $exists: yes } # never charm a profile twice
+        'derniereVisite.date': { $gte: dateLimit }, # only get profiles that were visited recently
+        (err, profiles) ->
+            return done(err) if err
+            console.log ' >> listeCharmeProfilsHier MongoDB query: ' + (Date.now() - timer) + 'ms'
+            for profile in profiles
+                profile.cvRatio = 0
+                stats = profile.derniereVisite.stats
+                if isFinite(stats.charmes) and isFinite(stats.visites) and isFinite(stats.mails)
+                    if (stats.charmes > 0) and (stats.visites > 0) and (stats.mails > 0)
+                        if stats.visites > stats.charmes
+                            profile.cvRatio = stats.charmes / stats.visites
+            # sort by C/V ratio
+            profiles = _.sortBy profiles, (p) -> p.cvRatio
+            # reverse to get best first
+            done null, goodProfiles.reverse()
+
 exports.visite = (req, res) ->
     adopte.fetchProfile req.params.id, (adopteErr, json) ->
         Profile.findOne {id: req.params.id}, (err, profile) ->
