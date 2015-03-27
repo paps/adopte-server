@@ -70,9 +70,10 @@ exports.listeCharmeProfilsHier = (req, res) ->
     timer = Date.now()
     Profile.find
         'avis': { $ne: 'nope' } # ignore bad profiles
-        'charmesBot.0': { $exists: yes } # never charm a profile twice
-        'charmes.0': { $exists: yes } # never charm a profile twice
-        'derniereVisite.date': { $gte: dateLimit }, # only get profiles that were visited recently
+        $or: [
+            { 'charmesBot.0': { $gte: dateLimit } }
+            { 'charmes.0': { $gte: dateLimit } }
+        ],
         (err, profiles) ->
             return done(err) if err
             console.log ' >> listeCharmeProfilsHier MongoDB query: ' + (Date.now() - timer) + 'ms'
@@ -86,7 +87,7 @@ exports.listeCharmeProfilsHier = (req, res) ->
             # sort by C/V ratio
             profiles = _.sortBy profiles, (p) -> p.cvRatio
             # reverse to get best first
-            done null, goodProfiles.reverse()
+            done null, profiles.reverse()
 
 exports.visite = (req, res) ->
     adopte.fetchProfile req.params.id, (adopteErr, json) ->
