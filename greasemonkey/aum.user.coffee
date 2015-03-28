@@ -464,6 +464,7 @@ notesBox = (profile) ->
 # --------------------------------------------------------------------------------------------------------------------------
 
 drawProfileList = (contentDiv, profiles) ->
+    contentDiv.append ($ '<p>').css('text-align', 'center').css('font-weight', 'bolder').text '(' + profiles.length + ')'
     for p in profiles
         div = ($ '<div>')
             .css('border-bottom', '1px solid #ccc')
