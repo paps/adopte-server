@@ -44,7 +44,8 @@ getGoodProfiles = (done) ->
                         if stats.visites > stats.charmes
                             profile.cvRatio = stats.charmes / stats.visites
                             if 0.05 < profile.cvRatio < 0.8
-                                goodProfiles.push profile
+                                if stats.mails <= 10
+                                    goodProfiles.push profile
             # sort by C/V ratio
             goodProfiles = _.sortBy goodProfiles, (p) -> p.cvRatio
             # reverse to get best first
