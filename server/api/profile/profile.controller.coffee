@@ -239,7 +239,7 @@ exports.listeVisite = (req, res) ->
     if (typeof ids) isnt 'string'
         res.send 400
         return
-    days = 5
+    days = 3
     dateLimit = new Date(Date.now() - (24 * 60 * 60 * 1000) * days)
     idsToVisit = []
     ids = ids.split ','
