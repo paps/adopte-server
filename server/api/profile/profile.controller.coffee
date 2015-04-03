@@ -101,10 +101,13 @@ exports.nouvellesInscrites = (req, res) ->
             id: -1,
         (err, newMember) ->
             return handleError(res, err) if err
-            Profile.find
-                'avis': { $ne: 'nope' } # ignore bad profiles
-                'id': { $gte: newMember.id, $lt: 200000000 },
-                'visites.0': { $exists: no }
+            Profile.find(
+                $query:
+                    'avis': { $ne: 'nope' } # ignore bad profiles
+                    'id': { $gte: newMember.id, $lt: 200000000 }
+                    'visites.0': { $exists: no }
+                $orderby:
+                    'id': 1,
                 (err, profiles) ->
                     return handleError(res, err) if err
                     res.json shuffle profiles
