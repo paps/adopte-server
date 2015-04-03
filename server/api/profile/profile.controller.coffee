@@ -107,7 +107,7 @@ exports.nouvellesInscrites = (req, res) ->
                     'id': { $gte: newMember.id, $lt: 200000000 }
                     'visites.0': { $exists: no }
                 $orderby:
-                    'id': 1,
+                    'id': -1,
                 (err, profiles) ->
                     return handleError(res, err) if err
                     #res.json shuffle profiles
