@@ -101,7 +101,7 @@ exports.nouvellesInscrites = (req, res) ->
             id: -1,
         (err, newMember) ->
             return handleError(res, err) if err
-            Profile.find(
+            Profile.find
                 $query:
                     'avis': { $ne: 'nope' } # ignore bad profiles
                     'id': { $gte: newMember.id, $lt: 200000000 }
@@ -110,7 +110,8 @@ exports.nouvellesInscrites = (req, res) ->
                     'id': 1,
                 (err, profiles) ->
                     return handleError(res, err) if err
-                    res.json shuffle profiles
+                    #res.json shuffle profiles
+                    res.json profiles
 
 exports.visite = (req, res) ->
     adopte.fetchProfile req.params.id, (adopteErr, json) ->
