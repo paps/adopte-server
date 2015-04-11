@@ -191,6 +191,19 @@ pageProfileMeuf = () ->
     ).fail(ajaxError).always () ->
         requestStatus.remove()
 
+    reverseImageSearch()
+
+# --------------------------------------------------------------------------------------------------------------------------
+
+reverseImageSearch = () ->
+    $('.gallery-fullsize-view').each () ->
+        img = $(@).find 'img'
+        if img.length is 1
+            url = $(img[0]).attr 'src'
+            div = $('<div>').css('margin-top', '20px')
+            a = $('<a>').attr('target', '_blank').attr('href', 'https://www.google.com/searchbyimage?site=search&sa=X&image_url=' + encodeURIComponent(url)).text 'Google Reverse Image Search'
+            $(@).append div.append a
+
 # --------------------------------------------------------------------------------------------------------------------------
 
 drawProfileBox = (profile) ->
