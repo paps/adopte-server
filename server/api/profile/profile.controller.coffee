@@ -245,8 +245,6 @@ exports.listeVisite = (req, res) ->
     if (typeof ids) isnt 'string'
         res.send 400
         return
-    days = 3
-    dateLimit = new Date(Date.now() - (24 * 60 * 60 * 1000) * days)
     idsToVisit = []
     ids = ids.split ','
     idIterator = (id, done) ->
@@ -259,14 +257,19 @@ exports.listeVisite = (req, res) ->
                 else
                     if profile
                         if profile.avis is 'nope'
-                            console.log '* ' + id + ': Nope!'
+                            console.log '* ' + profile.id + ': Nope!'
                         else
-                            days = Math.round((Date.now() - profile.derniereVisite.date.getTime()) / (24 * 60 * 60 * 1000))
-                            if profile.derniereVisite.date.getTime() < dateLimit.getTime()
-                                console.log '* ' + id + ': Visited ' + days + ' days ago -> visiting'
-                                idsToVisit.push id
+                            totalVisits = profile.visites.length + profile.visitesBot.length
+                            if totalVisits <= 0
+                                console.log '* ' + profile.id + ': Found but ' + totalVisits + ' visits, wtf -> visiting'
+                                idsToVisit.push profile.id
                             else
-                                console.log '* ' + id + ': Visited ' + days + ' days ago'
+                                daysSinceLastVisit = Math.round((Date.now() - profile.derniereVisite.date.getTime()) / (24 * 60 * 60 * 1000))
+                                if (daysSinceLastVisit >= (totalVisits + 1)) or (daysSinceLastVisit >= 10)
+                                    console.log '* ' + id + ': Visited ' + totalVisits + ' times, last visit was ' + daysSinceLastVisit + ' days ago -> visiting'
+                                    idsToVisit.push id
+                                else
+                                    console.log '* ' + id + ': Visited ' + totalVisits + ' times, last visit was ' + daysSinceLastVisit + ' days ago'
                     else
                         console.log '* ' + id + ': Not found -> visiting'
                         idsToVisit.push id
