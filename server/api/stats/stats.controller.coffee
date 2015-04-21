@@ -40,6 +40,7 @@ exports.csv = (req, res) ->
             return handleError(res, err) if err
             csv = ''
             for s in stats
-                csv += (dateToString s.date) + ',' + s.contacts + ',' + s.visites + '\n'
+                if (s.contacts >= 0) and (s.visites >= 0)
+                    csv += (dateToString s.date) + ',' + s.contacts + ',' + s.visites + '\n'
             res.header 'Content-Type', 'text/csv'
             res.send 200, csv
