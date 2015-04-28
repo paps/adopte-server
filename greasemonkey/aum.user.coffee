@@ -193,6 +193,32 @@ pageProfileMeuf = () ->
 
     reverseImageSearch()
 
+    ($ '#view_details .data table tbody tr td').each () ->
+        td = $(@)
+        if td.text().indexOf('Mensurations') >= 0
+            text = td.text().replace('Mensurations', '').replace(/\s/gi, '')
+            if (text.indexOf('cm') >= 0) and (text.indexOf('kg') >= 0)
+                matches = text.match /(\d+)cm,(\d+)kg/i
+                if (matches != null) and (matches.length is 3)
+                    taille = parseInt(matches[1]) / 100
+                    poids = parseInt matches[2]
+                    if isFinite(taille) and isFinite(poids)
+                        imc = round poids / taille / taille, 1
+                        labels = [
+                            { max: 16.5, name: 'dénutrition ou famine' },
+                            { max: 18.5, name: 'maigreur' },
+                            { max: 25.0, name: 'corpulence normale' },
+                            { max: 30.0, name: 'surpoids' },
+                            { max: 35.0, name: 'obésité modérée' },
+                            { max: 40.0, name: 'obésité sévère' },
+                            { max: null, name: 'obésité morbide ou massive' },
+                        ]
+                        for label in labels
+                            if (not label.max) or (imc < label.max)
+                                selectedLabel = label
+                                break
+                        $('#view_details').after $('<div>').css('font-weight', 'bold').css('border', '1px solid #ccc').text 'IMC : ' + imc + ' (' + selectedLabel.name + ')'
+
 # --------------------------------------------------------------------------------------------------------------------------
 
 reverseImageSearch = () ->
