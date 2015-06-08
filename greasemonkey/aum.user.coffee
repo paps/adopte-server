@@ -139,7 +139,7 @@ pageProfileMeuf = () ->
     if phrase
         ($ 'blockquote.title').empty().text phrase
 
-    removeX = (elem) -> elem.text elem.text().replace(' x', '')
+    removeX = (elem) -> elem.text elem.text().replace(' x', '').replace(' ', '')
 
     profileId = parseInt ($ '#member-id').text().replace 'ID.', ''
 
