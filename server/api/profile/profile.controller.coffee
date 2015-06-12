@@ -258,7 +258,7 @@ exports.listeVisite = (req, res) ->
                     if profile
                         if profile.avis is 'nope'
                             console.log '* ' + profile.id + ': Nope!'
-                        else if profile.derniereVisite.json.can_mail is true
+                        else if profile.derniereVisite?.json?.can_mail is true
                             console.log '* ' + profile.id + ': In contacts!'
                         else
                             totalVisits = profile.visites.length + profile.visitesBot.length
