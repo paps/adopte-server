@@ -240,6 +240,7 @@ exports.getBotStatus = (req, res) ->
     else
         res.send 404
 
+nopeCache = []
 exports.listeVisite = (req, res) ->
     ids = req.param 'ids'
     if (typeof ids) isnt 'string'
@@ -250,35 +251,42 @@ exports.listeVisite = (req, res) ->
     idIterator = (id, done) ->
         id = parseInt id, 10
         if isFinite(id) and id > 100
-            Profile.findOne {id: id}, (err, profile) ->
-                if err
-                    console.log '* ' + id + ': Error: ' + err.toString()
-                    return done null
-                else
-                    if profile
-                        if profile.avis is 'nope'
-                            console.log '* ' + profile.id + ': Nope!'
-                        else if profile.derniereVisite?.json?.can_mail is true
-                            console.log '* ' + profile.id + ': In contacts!'
-                        else
-                            totalVisits = profile.visites.length + profile.visitesBot.length
-                            if totalVisits <= 0
-                                console.log '* ' + profile.id + ': Found but ' + totalVisits + ' visits, wtf -> visiting'
-                                idsToVisit.push profile.id
-                            else
-                                daysSinceLastVisit = Math.round((Date.now() - profile.derniereVisite.date.getTime()) / (24 * 60 * 60 * 1000))
-                                if (daysSinceLastVisit >= (totalVisits + 1)) or (daysSinceLastVisit >= 10)
-                                    console.log '* ' + id + ': Visited ' + totalVisits + ' times, last visit was ' + daysSinceLastVisit + ' days ago -> visiting'
-                                    idsToVisit.push id
-                                else
-                                    console.log '* ' + id + ': Visited ' + totalVisits + ' times, last visit was ' + daysSinceLastVisit + ' days ago'
+            if id in nopeCache
+                console.log '* ' + id + ': In nopeCache'
+                done null
+            else
+                Profile.findOne {id: id}, (err, profile) ->
+                    if err
+                        console.log '* ' + id + ': Error: ' + err.toString()
+                        done null
                     else
-                        console.log '* ' + id + ': Not found -> visiting'
-                        idsToVisit.push id
-                    done null
+                        if profile
+                            if profile.avis is 'nope'
+                                console.log '* ' + profile.id + ': Nope!'
+                                nopeCache.push id
+                            else if profile.derniereVisite?.json?.can_mail is true
+                                console.log '* ' + profile.id + ': In contacts!'
+                                nopeCache.push id
+                            else
+                                totalVisits = profile.visites.length + profile.visitesBot.length
+                                if totalVisits <= 0
+                                    console.log '* ' + profile.id + ': Found but ' + totalVisits + ' visits, wtf -> visiting'
+                                    idsToVisit.push profile.id
+                                else
+                                    daysSinceLastVisit = Math.round((Date.now() - profile.derniereVisite.date.getTime()) / (24 * 60 * 60 * 1000))
+                                    if (daysSinceLastVisit >= (totalVisits + 1)) or (daysSinceLastVisit >= 10)
+                                        console.log '* ' + id + ': Visited ' + totalVisits + ' times, last visit was ' + daysSinceLastVisit + ' days ago -> visiting'
+                                        idsToVisit.push id
+                                    else
+                                        console.log '* ' + id + ': Visited ' + totalVisits + ' times, last visit was ' + daysSinceLastVisit + ' days ago'
+                        else
+                            console.log '* ' + id + ': Not found -> visiting'
+                            idsToVisit.push id
+                        done null
         else
             console.log '* Invalid profile ID ' + id
             done null
     async.eachSeries ids, idIterator, () ->
         console.log '* Returning ' + idsToVisit.length + ' IDs to visit'
+        console.log '* NopeCache has ' + nopeCache.length + ' IDs'
         res.json 200, idsToVisit
