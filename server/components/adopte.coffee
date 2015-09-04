@@ -8,6 +8,7 @@ httpOptions =
     headers:
         'User-Agent': config.adopte.agent
         'Authorization': config.adopte.auth
+    proxy: config.adopte.proxy
 
 exports.fetchProfile = (id, done) ->
     needle.request "get", "http://www.adopteunmec.com/api/users/" + id, null, httpOptions, (err, res) ->

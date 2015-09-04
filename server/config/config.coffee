@@ -10,7 +10,7 @@ config =
     root: path.normalize(__dirname + "/../..")
 
     # Server port
-    port: process.env.PORT or 9000
+    port: process.env.PORT or 29029
 
     # Should we populate the DB with sample data?
     seedDB: false
@@ -28,7 +28,7 @@ config =
 
     # MongoDB connection options
     mongo:
-        uri: "mongodb://localhost/adopteserver-dev"
+        uri: "mongodb://localhost/adopteserver"
         options:
             db:
                 safe: true

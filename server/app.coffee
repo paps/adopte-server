@@ -18,10 +18,13 @@ require './config/seed'  if config.seedDB
 
 # Setup server
 app = express()
-server = require('https').createServer
-    key: (fs.readFileSync 'sslcert/server.key', 'utf8')
-    cert: (fs.readFileSync 'sslcert/server.crt', 'utf8'),
-    app
+if (fs.existsSync 'sslcert/server.key') and (fs.existsSync 'sslcert/server.crt')
+    server = require('https').createServer
+        key: (fs.readFileSync 'sslcert/server.key', 'utf8')
+        cert: (fs.readFileSync 'sslcert/server.crt', 'utf8'),
+        app
+else
+    server = require('http').createServer app
 require('./config/express') app
 require('./routes') app
 
