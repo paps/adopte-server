@@ -23,6 +23,11 @@ Obviously you need a running MongoDB server.
 7. `grunt build` (don't know if it's needed or not...)
 8. `PORT=50757 grunt serve`
 
+SSL
+---
+
+Optionally enable SSL by adding `sslcert/server.key` and `sslcert/server.crt`.
+
 Greasemonkey
 ------------
 
@@ -41,7 +46,7 @@ Account stats
 
 The bot will automatically collect stats over time, however you might want to generate stats from the beginning of your subscription to AuM.
 
-It's useful if you want to know what profile photo works over time, for example.
+It's useful if you want to know what profile photo works best over time, for example.
 
 To generate all your stats:
 
