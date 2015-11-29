@@ -8,3 +8,4 @@ dist
 server/config/config.local.coffee
 .*.swp
 greasemonkey/config.js
+greasemonkey/aum.user.js
