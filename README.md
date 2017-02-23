@@ -1,5 +1,5 @@
-Adopte-Server ![project-status](http://stillmaintained.com/paps/adopte-server.png)
-==================================================================================
+Adopte-Server
+=============
 
 This is a small Node.js server for handling a Adopte-Un-Mec (AuM) Greasemonkey script and Phantombuster bot.
 
